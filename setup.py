@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name='deepmoji',
+    name='hemoji',
     version='1.0',
-    packages=['deepmoji'],
-    description='DeepMoji library',
+    packages=['hemoji'],
+    description='HeMoji library',
     include_package_data=True,
     install_requires=[
         'emoji==0.4.5',
