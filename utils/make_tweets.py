@@ -31,6 +31,7 @@ def extractTextFromTweets(orig_file, tweets_text_file, lines_to_process):
 
     # print (lines_to_process) lines from (orig_file) to (tweets_meta_file)
     with open(orig_file, 'r') as f:
+        dropped_lines = 0
         for i in range(lines_to_process):
             x = f.readline()
             if i % 100000 == 0:
@@ -46,7 +47,8 @@ def extractTextFromTweets(orig_file, tweets_text_file, lines_to_process):
                             # tsv_writer.writerow(js['text'].encode('utf-8'))
                     except ValueError as e:
                         print("[WARNING] line number {0} is invalid to extract: {1}".format(i, x))
-        print("Done! Parsed {0} lines.".format(i))
+                        dropped_lines += 1
+        print("Done!\nLines parsed successfully: {0}\nLines dropped: {1}".format(i, dropped_lines))
 
 
 if __name__ == '__main__':
