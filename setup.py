@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='hemoji',
     version='1.0',
-    packages=['hemoji'],
+    packages=['lib'],
     description='HeMoji library',
     include_package_data=True,
     install_requires=[
