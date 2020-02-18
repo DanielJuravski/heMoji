@@ -131,3 +131,7 @@ dmypy.json
 # My ignores
 **/*.txt
 .idea
+**/*.pyc
+logs
+data
+_e2e
