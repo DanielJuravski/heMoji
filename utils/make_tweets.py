@@ -53,7 +53,8 @@ def extractTextFromTweets(orig_file, tweets_text_file, lines_to_process):
 
 if __name__ == '__main__':
     """
-    usage: python make_tweets.py [ORIG_RECORD_FILE] [TWEETS_TEXT_FILE] [LINES_TO_PROCESS]
+    Usage: python make_tweets.py [ORIG_RECORD_FILE] [TWEETS_TEXT_FILE] [LINES_TO_PROCESS]
+    my Usage example: python make_tweets.py ../../../he_tweets/hebrew_tweets_wtime_500G.json ../../data/tweets_500G.txt all &> ../../data/tweets_500G.log.txt
     1. Iterate over original record file (ORIG_RECORD_FILE)
     2. and print only the text to (TWEETS_TEXT_FILE)
     """
