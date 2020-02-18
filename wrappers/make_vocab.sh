@@ -1,0 +1,1 @@
+ python src/make_vocab.py &> logs/vocab.log
