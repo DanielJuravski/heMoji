@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import sys
 import pickle
 import json
