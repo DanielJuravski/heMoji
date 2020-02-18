@@ -1,8 +1,8 @@
 import json
 import sys
 
-ORIG_RECORD_FILE = '../data/hebrew_tweets_wtime_3G.json'
-TWEETS_TEXT_FILE = '../data/hebrew_tweets_3G_mini.tsv'
+ORIG_RECORD_FILE = '../data/hebrew_tweets_wtime_3G_test.json'
+TWEETS_TEXT_FILE = '../data/hebrew_tweets_3G_mini_test2.tsv'
 LINES_TO_PROCESS = 100000
 
 
@@ -36,14 +36,17 @@ def extractTextFromTweets(orig_file, tweets_text_file, lines_to_process):
             if i % 100000 == 0:
                 print("Parsing line {} out of {} ({}%) ...".format(i, lines_to_process, i*100.0/lines_to_process))
             with open(tweets_text_file, 'a') as f_txt:
-                # f_mini.write(x)
                 if not x: break
                 if x != '\n':
-                    js = json.loads(x)
-                    if 'text' in js:
-                        f_txt.write(js['text'].encode('utf-8'))
-                        f_txt.write('\n')
-                        # tsv_writer.writerow(js['text'].encode('utf-8'))
+                    try:
+                        js = json.loads(x)
+                        if 'text' in js:
+                            f_txt.write(js['text'].encode('utf-8'))
+                            f_txt.write('\n')
+                            # tsv_writer.writerow(js['text'].encode('utf-8'))
+                    except ValueError as e:
+                        print("[WARNING] line number {0} is invalid to extract: {1}".format(i, x))
+        print("Done! Parsed {0} lines.".format(i))
 
 
 if __name__ == '__main__':
