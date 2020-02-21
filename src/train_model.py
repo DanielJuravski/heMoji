@@ -18,30 +18,58 @@ VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
 MAXLEN = 80
 BATCH_SIZE = 32
 EPOCHS = 3
+UINT = 16
 
 TIMES = dict()
 
 
 def getArgs():
     params = dict()
-    if len(sys.argv) == 7:
-        data_file = sys.argv[1]
-        vocab_file = sys.argv[2]
-        params["logs_dir"] = sys.argv[3]
-        params["maxlen"] = int(sys.argv[4])
-        params["batch_size"] = int(sys.argv[5])
-        params["epochs"] = int(sys.argv[6])
+
+    if '--data' in sys.argv:
+        option_i = sys.argv.index('--data')
+        data_file = sys.argv[option_i + 1]
     else:
-        print("[WARNING] Using default params")
         data_file = DATA_FILE_PATH
+
+    if '--vocab' in sys.argv:
+        option_i = sys.argv.index('--vocab')
+        vocab_file = sys.argv[option_i + 1]
+    else:
         vocab_file = VOCAB_FILE_PATH
+
+    if '--logs_dir' in sys.argv:
+        option_i = sys.argv.index('--logs_dir')
+        params["logs_dir"] = sys.argv[option_i + 1]
+    else:
         params["logs_dir"] = "/home/daniel/heMoji/logs/"
+
+    if '--maxlen' in sys.argv:
+        option_i = sys.argv.index('--maxlen')
+        params["maxlen"] = sys.argv[option_i + 1]
+    else:
         params["maxlen"] = MAXLEN
+
+    if '--batch_size' in sys.argv:
+        option_i = sys.argv.index('--batch_size')
+        params["batch_size"] = sys.argv[option_i + 1]
+    else:
         params["batch_size"] = BATCH_SIZE
+
+    if '--epochs' in sys.argv:
+        option_i = sys.argv.index('--epochs')
+        params["epochs"] = sys.argv[option_i + 1]
+    else:
         params["epochs"] = EPOCHS
 
-    print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(
-        data_file, vocab_file))
+    if '--uint' in sys.argv:
+        option_i = sys.argv.index('--uint')
+        params["uint"] = sys.argv[option_i + 1]
+    else:
+        params["uint"] = UINT
+
+    print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
+
     for (k,v) in params.iteritems():
         print("param:{0}, value:{1}".format(k,v))
     print("\n")
@@ -74,7 +102,7 @@ def loadData(data_file):
     return X, Y
 
 
-def splitData(X, Y):
+def splitData(X, Y, params):
     printTime(key='split_tokenize_start', msg="Start splitting and tokenizing X,Y data")
 
     st = SentenceTokenizer(vocab, 80, pre_data=True)
@@ -204,7 +232,7 @@ if __name__ == '__main__':
     data_file, vocab_file, params = getArgs()
     (X, Y) = loadData(data_file)
     vocab = loadVocab(vocab_file)
-    (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y)
+    (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, params)
     (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test)
 
     # model
