@@ -297,7 +297,8 @@ class TweetWordGenerator(WordGenerator):
         fields = line.strip().split("\t")
         # my code start
         if len(fields) > 1:
-            print("[ERROR]: I found a tweed with length bigger than 1!")  # and now we need to uncomment thehat comment, because there are situation that tweet can be splited to list bigger than 1 size
+            print("[ERROR]: I found a tweet with length bigger than 1!")  # and now we need to uncomment that comment, because there is situation that tweet can be splited to list bigger than 1 size
+            print(fields)
         # my code end
         valid, emojis = self.validated_tweet(fields)
         text = fields[0].replace(u'\\n', u'') \
