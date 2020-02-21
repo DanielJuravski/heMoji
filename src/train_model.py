@@ -120,13 +120,13 @@ def splitData(X, Y, params):
     return (x_train, x_dev, x_test), (y_train, y_dev, y_test)
 
 
-def padData(x_train, x_dev, x_test):
+def padData(x_train, x_dev, x_test, params):
     printTime(key='pad_start', msg="Start padding X,Y data")
 
     # not sure if necessary, because fixed_length is given in SentenceTokenizer
-    x_train = sequence.pad_sequences(x_train)  # , maxlen=maxlen)
-    x_dev = sequence.pad_sequences(x_dev)  # , maxlen=maxlen)
-    x_test = sequence.pad_sequences(x_test)  # , maxlen=maxlen)
+    x_train = sequence.pad_sequences(x_train, maxlen=params["maxlen"])
+    x_dev = sequence.pad_sequences(x_dev, maxlen=params["maxlen"])
+    x_test = sequence.pad_sequences(x_test, maxlen=params["maxlen"])
     print('X_train shape:', x_train.shape)
     print('X_dev shape:', x_dev.shape)
     print('X_test shape:', x_test.shape)
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     (X, Y) = loadData(data_file)
     vocab = loadVocab(vocab_file)
     (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, params)
-    (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test)
+    (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test, params)
 
     # model
     h, model, test_loss, test_acc = trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params)
