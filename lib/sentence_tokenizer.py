@@ -21,19 +21,21 @@ class SentenceTokenizer():
 
     def __init__(self, vocabulary, fixed_length, custom_wordgen=None,
                  ignore_sentences_with_only_custom=False, masking_value=None,
-                 unknown_value=1, prod=False, pre_data=False):
+                 unknown_value=1, prod=False, pre_data=False, uint=16):
         """ Needs a dictionary as input for the vocabulary.
 
-            pre_data: Optional. True - If the sentences are for learning (train/dev/test) process,
+            pre_data(my): Optional. True - If the sentences are for learning (train/dev/test) process,
                will be used to validate that there isn't any UNKs in these sentences (because the vocab is built
                ut of them)
-        """
 
-        if len(vocabulary) > np.iinfo('uint16').max:
+            uint(my): by default is 16. when loading super large vocabs, we need use 32.
+        """
+        self.uint = 'uint' + str(uint)
+        if len(vocabulary) > np.iinfo(self.uint).max:
             raise ValueError('Dictionary is too big ({} tokens) for the numpy '
                              'datatypes used (max limit={}). Reduce vocabulary'
                              ' or adjust code accordingly!'
-                             .format(len(vocabulary), np.iinfo('uint16').max))
+                             .format(len(vocabulary), np.iinfo(self.uint).max))
 
         # Shouldn't be able to modify the given vocabulary
         self.vocabulary = deepcopy(vocabulary)
@@ -95,9 +97,9 @@ class SentenceTokenizer():
                        else len(sentences))
 
         if self.masking_value == 0:
-            tokens = np.zeros((n_sentences, self.fixed_length), dtype='uint16')
+            tokens = np.zeros((n_sentences, self.fixed_length), dtype=self.uint)
         else:
-            tokens = (np.ones((n_sentences, self.fixed_length), dtype='uint16') *
+            tokens = (np.ones((n_sentences, self.fixed_length), dtype=self.uint) *
                       self.masking_value)
 
         if reset_stats:

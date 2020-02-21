@@ -105,7 +105,7 @@ def loadData(data_file):
 def splitData(X, Y, params):
     printTime(key='split_tokenize_start', msg="Start splitting and tokenizing X,Y data")
 
-    st = SentenceTokenizer(vocab, 80, pre_data=True)
+    st = SentenceTokenizer(vocab, 80, pre_data=True, uint=params["uint"])
 
     # Split using the default split ratio [0.7, 0.1, 0.2]
     (x_train, x_dev, x_test), (y_train, y_dev, y_test), added = st.split_train_val_test(X, Y)
