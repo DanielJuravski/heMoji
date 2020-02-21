@@ -46,24 +46,24 @@ def getArgs():
 
     if '--maxlen' in sys.argv:
         option_i = sys.argv.index('--maxlen')
-        params["maxlen"] = sys.argv[option_i + 1]
+        params["maxlen"] = int(sys.argv[option_i + 1])
     else:
         params["maxlen"] = MAXLEN
 
     if '--batch_size' in sys.argv:
         option_i = sys.argv.index('--batch_size')
-        params["batch_size"] = sys.argv[option_i + 1]
+        params["batch_size"] = int(sys.argv[option_i + 1])
     else:
         params["batch_size"] = BATCH_SIZE
 
     if '--epochs' in sys.argv:
         option_i = sys.argv.index('--epochs')
-        params["epochs"] = sys.argv[option_i + 1]
+        params["epochs"] = int(sys.argv[option_i + 1])
     else:
         params["epochs"] = EPOCHS
 
     if '--uint' in sys.argv:
-        option_i = sys.argv.index('--uint')
+        option_i = int(sys.argv.index('--uint'))
         params["uint"] = sys.argv[option_i + 1]
     else:
         params["uint"] = UINT
