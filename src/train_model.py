@@ -5,6 +5,7 @@ import pickle
 import json
 from keras.preprocessing import sequence
 import matplotlib.pyplot as plt
+import datetime
 
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
@@ -16,7 +17,9 @@ VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
 
 MAXLEN = 80
 BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 3
+
+TIMES = dict()
 
 
 def getArgs():
@@ -47,6 +50,7 @@ def getArgs():
 
 
 def loadVocab(vocab_file):
+    printTime(key='load_vocab_start', msg="Start loading vocab")
     with open(vocab_file, 'r') as f:
         vocab = json.load(f)
         print("Vocab size is: {0}".format(len(vocab)))
@@ -54,7 +58,14 @@ def loadVocab(vocab_file):
     return vocab
 
 
+def printTime(key, msg):
+    t = datetime.datetime.now()
+    print("{0}: {1}".format(msg, t.strftime('%d/%m/%Y_%H:%M:%S')))
+    TIMES[key] = t
+
+
 def loadData(data_file):
+    printTime(key='load_data_start', msg="Start loading X,Y data")
     with open(data_file, 'rb') as f:
         data = pickle.load(f)
         X = data['X']
@@ -64,6 +75,8 @@ def loadData(data_file):
 
 
 def splitData(X, Y):
+    printTime(key='split_tokenize_start', msg="Start splitting and tokenizing X,Y data")
+
     st = SentenceTokenizer(vocab, 80, pre_data=True)
 
     # Split using the default split ratio [0.7, 0.1, 0.2]
@@ -80,6 +93,8 @@ def splitData(X, Y):
 
 
 def padData(x_train, x_dev, x_test):
+    printTime(key='pad_start', msg="Start padding X,Y data")
+
     # not sure if necessary, because fixed_length is given in SentenceTokenizer
     x_train = sequence.pad_sequences(x_train)  # , maxlen=maxlen)
     x_dev = sequence.pad_sequences(x_dev)  # , maxlen=maxlen)
@@ -92,6 +107,7 @@ def padData(x_train, x_dev, x_test):
 
 
 def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
+    printTime(key='train_start', msg="Start Training X,Y data")
     print('Build model...')
     nb_classes = len(e2l)
     vocab_size = len(vocab)
@@ -109,6 +125,8 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
     test_loss, test_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
     print('Test loss:', test_loss)
     print('Test accuracy:', test_acc)
+
+    printTime(key='train_end', msg="End Training X,Y data")
 
     return h, model, test_loss, test_acc
 
@@ -152,6 +170,14 @@ def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, par
         f.writelines(test_acc_str)
         f.writelines(test_loss_str)
 
+        # times
+        for k,v in TIMES.iteritems():
+            msg = k + ":" + v.strftime('%d/%m/%Y_%H:%M:%S') + '\n'
+            f.writelines(msg)
+        train_time = (TIMES['train_end'] - TIMES['train_start'])#.strftime('%d/%m/%Y_%H:%M:%S')
+        msg = "All train time: " + str(train_time) + '\n'
+        f.writelines(msg)
+
 
 def saveArtifacts(model, h, test_acc, test_loss, params):
     train_acc = h.history['acc']
@@ -185,4 +211,6 @@ if __name__ == '__main__':
     h, model, test_loss, test_acc = trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params)
 
     saveArtifacts(model, h, test_acc, test_loss, params)
+
+    print("Done successfully.")
 
