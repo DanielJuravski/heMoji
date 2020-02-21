@@ -1,26 +1,22 @@
 #!/bin/bash
 
-DATA_PKL_FILE=$1
-VOCAB_FILE=$2
-LOGS_DIR=$3
-MAXLEN=$4
-BATCH_SIZE=$5
-EPOCHS=$6
+# transfer all the args to the py script (the parsing is executed inside)
+# the only arg that is neede is the '--logs_dir' for inner print (&>)
 
-[[ ! -z "$DATA_PKL_FILE" ]] && echo "DATA_PKL_FILE: $DATA_PKL_FILE" || echo "[WARNING] DATA_PKL_FILE arg empty"
-[[ ! -z "$VOCAB_FILE" ]] && echo "VOCAB_FILE: $VOCAB_FILE" || echo "[WARNING] VOCAB_FILE arg empty"
-[[ ! -z "$LOGS_DIR" ]] && echo "LOGS_DIR: $LOGS_DIR" || echo "[WARNING] LOGS_DIR arg empty"
-[[ ! -z "$LOGS_DIR" ]] && echo "LOGS_DIR: $LOGS_DIR" || LOGS_DIR='/home/daniel/heMoji/logs'
-[[ ! -z "$MAXLEN" ]] && echo "MAXLEN: $MAXLEN" || echo "[WARNING] MAXLEN arg empty"
-[[ ! -z "$BATCH_SIZE" ]] && echo "BATCH_SIZE: $BATCH_SIZE" || echo "[WARNING] BATCH_SIZE arg empty"
-[[ ! -z "$EPOCHS" ]] && echo "EPOCHS: $EPOCHS" || echo "[WARNING] EPOCHS arg empty"
+PARAMS=$*
 
+# --logs_dir parsing
+[[ $PARAMS =~ --logs_dir[[:space:]](.[a-zA-Z/]*) ]] && LOGS_DIR=${BASH_REMATCH[1]}
 
 # set log subdir
 dt=$(date '+%d_%m_%Y_%H_%M_%S');
-sd=$LOGS_DIR"/model/$dt/"
+sd=$LOGS_DIR"model/$dt/"
 mkdir -p $sd
-echo "Logging to: $sd"
+echo "Logging to: $sd ..."
 
+# set new path of LOGS_DIR
+PARAMS=${PARAMS//${LOGS_DIR}/${sd}}
 
-python src/train_model.py $DATA_PKL_FILE $VOCAB_FILE $sd $MAXLEN $BATCH_SIZE $EPOCHS &> $sd/log.txt
+python src/train_model.py $PARAMS &> $sd/log.txt
+
+echo "Done!"
