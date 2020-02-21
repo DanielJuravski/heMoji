@@ -6,13 +6,13 @@
 PARAMS=$*
 
 # --logs_dir parsing
-[[ $PARAMS =~ --logs_dir[[:space:]](.[a-zA-Z/]*) ]] && LOGS_DIR=${BASH_REMATCH[1]}
+[[ $PARAMS =~ --logs_dir[[:space:]]([a-zA-Z./]*) ]] && LOGS_DIR=${BASH_REMATCH[1]}
 
 # set log subdir
 dt=$(date '+%d_%m_%Y_%H_%M_%S');
 sd=$LOGS_DIR"model/$dt/"
 mkdir -p $sd
-echo "Logging to: $sd ..."
+echo "Logging to: $sd"
 
 # set new path of LOGS_DIR
 PARAMS=${PARAMS//${LOGS_DIR}/${sd}}
