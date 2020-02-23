@@ -77,7 +77,7 @@ class VocabBuilder():
             dropped_words = 0
             dropped_appears = 0
             for (w, c) in data:
-                if c > threshold:
+                if c > threshold or w in SPECIAL_TOKENS:
                     w = w.decode('utf-8')#.encode('utf-8')  # for preaty json. if that won't work, remove the encoding.
                     json_d[w] = i
                     i += 1
