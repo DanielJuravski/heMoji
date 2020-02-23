@@ -16,7 +16,7 @@ def getArgs():
     if len(sys.argv) == 4:
         tweets_text_file = sys.argv[1]
         vocab_file = sys.argv[2]
-        threshold = sys.argv[3]
+        threshold = int(sys.argv[3])
     else:
         tweets_text_file = TWEETS_TEXT_FILE
         vocab_file = VOCAB_FILE
