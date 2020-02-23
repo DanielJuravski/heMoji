@@ -49,12 +49,13 @@ class VocabBuilder():
                     self.word_counts[word] = 1
                     # self.word_counts[word_u] = 1
 
-    def save_vocab(self, path_npz=None, path_json=None):
+    def save_vocab(self, threshold, path_npz=None, path_json=None):
         """ Saves the vocabulary into 2 files (npz-compressed np file and json file)
 
         # Arguments:
             path: Where the vocabulary should be saved. If not specified, a
                   randomly generated filename is used instead.
+            threshold: if word's count lower than threshold, don't write it to vocab
         """
         dtype = ([('word', '|S{}'.format(self.word_length_limit)), ('count', 'int')])
         np_dict = np.array(self.word_counts.items(), dtype=dtype)
@@ -73,13 +74,21 @@ class VocabBuilder():
         with open(path_json, 'w') as f:
             json_d = {}
             i = 0
-            for (w,_) in data:
-                w = w.decode('utf-8')#.encode('utf-8')  # for preaty json. if that won't work, remove the encoding.
-                json_d[w] = i
-                i += 1
+            dropped_words = 0
+            dropped_appears = 0
+            for (w, c) in data:
+                if c > threshold:
+                    w = w.decode('utf-8')#.encode('utf-8')  # for preaty json. if that won't work, remove the encoding.
+                    json_d[w] = i
+                    i += 1
+                else:
+                    dropped_words += 1
+                    dropped_appears += c
             json.dump(json_d, f, indent=4, sort_keys=True) ## , ensure_ascii=False, encoding=None
             print("Saved dict to {}".format(path_json))
-            print ("Vocab size is {0}".format(len(json_d)))
+            print("Vocab size is {0}".format(len(json_d)))
+            print("Number of dropped words: {0}".format(dropped_words))
+            print("Number of dropped appearances: {0}".format(dropped_appears))
 
     def get_next_word(self):
         """ Returns next tokenized sentence from the word generator.
