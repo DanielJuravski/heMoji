@@ -19,6 +19,8 @@ MAXLEN = 80
 BATCH_SIZE = 32
 EPOCHS = 3
 UINT = 16
+DROPOUT_EMB = 0
+DROPOUT_FINAL = 0
 
 TIMES = dict()
 
@@ -67,6 +69,18 @@ def getArgs():
         params["uint"] = sys.argv[option_i + 1]
     else:
         params["uint"] = UINT
+
+    if '--embed_dropout_rate' in sys.argv:
+        option_i = int(sys.argv.index('--embed_dropout_rate'))
+        params["embed_dropout_rate"] = int(sys.argv[option_i + 1])
+    else:
+        params["embed_dropout_rate"] = DROPOUT_EMB
+
+    if '--final_dropout_rate' in sys.argv:
+        option_i = int(sys.argv.index('--final_dropout_rate'))
+        params["final_dropout_rate"] = int(sys.argv[option_i + 1])
+    else:
+        params["final_dropout_rate"] = DROPOUT_FINAL
 
     print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
 
@@ -140,7 +154,9 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
     nb_classes = len(e2l)
     vocab_size = len(vocab)
 
-    model = hemoji_architecture(nb_classes=nb_classes, nb_tokens=vocab_size, maxlen=params["maxlen"])
+    model = hemoji_architecture(nb_classes=nb_classes, nb_tokens=vocab_size, maxlen=params["maxlen"],
+                                embed_dropout_rate=params["embed_dropout_rate"],
+                                final_dropout_rate=params["final_dropout_rate"])
     model.summary()
 
     model.compile(loss='sparse_categorical_crossentropy',
@@ -226,7 +242,7 @@ def saveArtifacts(model, h, test_acc, test_loss, params):
 
 if __name__ == '__main__':
     """
-    Usage: python [DATA_FILE_PATH] [VOCAB_FILE_PATH] [LOGS_DIR] [MAXLEN] [BATCH_SIZE] [EPOCHS] 
+    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 50 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0
     Train heMoji model
     """
     data_file, vocab_file, params = getArgs()
