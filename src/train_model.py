@@ -19,8 +19,8 @@ MAXLEN = 80
 BATCH_SIZE = 32
 EPOCHS = 3
 UINT = 16
-DROPOUT_EMB = 0
-DROPOUT_FINAL = 0
+DROPOUT_EMB = 0.0
+DROPOUT_FINAL = 0.0
 
 TIMES = dict()
 
@@ -72,13 +72,13 @@ def getArgs():
 
     if '--embed_dropout_rate' in sys.argv:
         option_i = int(sys.argv.index('--embed_dropout_rate'))
-        params["embed_dropout_rate"] = int(sys.argv[option_i + 1])
+        params["embed_dropout_rate"] = float(sys.argv[option_i + 1])
     else:
         params["embed_dropout_rate"] = DROPOUT_EMB
 
     if '--final_dropout_rate' in sys.argv:
         option_i = int(sys.argv.index('--final_dropout_rate'))
-        params["final_dropout_rate"] = int(sys.argv[option_i + 1])
+        params["final_dropout_rate"] = float(sys.argv[option_i + 1])
     else:
         params["final_dropout_rate"] = DROPOUT_FINAL
 
