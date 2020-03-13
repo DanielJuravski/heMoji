@@ -63,7 +63,7 @@ class SentenceTokenizer():
             #                              ignore_emojis=False,
             #                              remove_variation_selectors=True,
             #                              break_replacement=True)
-            from src.emoji2label import e2l
+            from src.emoji2label import alle2l as e2l
             if prod==True:  ## on prod time (user inserts its own sentence), dont drop if that sentence doesn't contain emoji
                 e2l = None
             self.wordgen = TweetWordGenerator(None, allow_unicode_text=True, wanted_emojis=e2l)

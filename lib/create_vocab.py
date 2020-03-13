@@ -74,21 +74,21 @@ class VocabBuilder():
         with open(path_json, 'w') as f:
             json_d = {}
             i = 0
-            dropped_words = 0
-            dropped_appears = 0
+            rare_words = 0
+            rare_words_appears = 0
             for (w, c) in data:
                 if c > threshold or w in SPECIAL_TOKENS:
                     w = w.decode('utf-8')#.encode('utf-8')  # for preaty json. if that won't work, remove the encoding.
                     json_d[w] = i
                     i += 1
                 else:
-                    dropped_words += 1
-                    dropped_appears += c
+                    rare_words += 1
+                    rare_words_appears += c
             json.dump(json_d, f, indent=4, sort_keys=True) ## , ensure_ascii=False, encoding=None
             print("Saved dict to {}".format(path_json))
             print("Vocab size is {0}".format(len(json_d)))
-            print("Number of dropped words: {0}".format(dropped_words))
-            print("Number of dropped appearances: {0}".format(dropped_appears))
+            print("Number of unique rare words: {0}".format(rare_words))
+            print("Number of rare words appearances: {0}".format(rare_words_appears))
 
     def get_next_word(self):
         """ Returns next tokenized sentence from the word generator.
@@ -108,7 +108,7 @@ class VocabBuilder():
     def set_tweet_tag(self):
         """ Generates word's label.
         """
-        from src.emoji2label import e2l
+        from src.emoji2label import alle2l as e2l
         for words, label, orig_line in self.word_gen:
             # sentence = (' '.join(words))
 

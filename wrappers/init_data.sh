@@ -11,6 +11,7 @@ THRESHOLD=$5
 [[ ! -z "$DATA_PKL_FILE" ]] && echo "DATA_PKL_FILE: $DATA_PKL_FILE" || echo "[WARNING] DATA_PKL_FILE arg empty"
 [[ ! -z "$LOGS_DIR" ]] && echo "LOGS_DIR: $LOGS_DIR" || echo "[WARNING] LOGS_DIR arg empty"
 [[ ! -z "$LOGS_DIR" ]] && echo "LOGS_DIR: $LOGS_DIR" || LOGS_DIR='/home/daniel/heMoji/logs'
+[[ ! -z "$THRESHOLD" ]] && echo "THRESHOLD: $THRESHOLD" || echo "[WARNING] THRESHOLD arg empty"
 
 
 echo Start making vocab file
