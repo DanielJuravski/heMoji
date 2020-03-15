@@ -5,7 +5,8 @@ import codecs
 from lib.create_vocab import VocabBuilder
 from lib.word_generator import TweetWordGenerator
 import sys
-from src.emoji2label import alle2l as e2l
+from src.emoji2label import deepe2l as e2l
+
 
 TWEETS_TEXT_FILE = '/home/daniel/heMoji/data/hebrew_tweets_3G_mini.tsv'
 VOCAB_FILE = '/home/daniel/heMoji/data/vocabulary.json'

@@ -15,6 +15,9 @@ from src.emoji2label import deepe2l as e2l
 DATA_FILE_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
 VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
 
+DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
+VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_3G_5rare.json'
+
 MAXLEN = 80
 BATCH_SIZE = 32
 EPOCHS = 3

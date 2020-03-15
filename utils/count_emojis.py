@@ -5,8 +5,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
 
-from src.emoji2label import alle2l as e2l
-from src.emoji2label import l2alle as l2e
+from src.emoji2label import deepe2l as e2l
+from src.emoji2label import l2deepe as l2e
 
 
 DATA_FILE_PATH = '/home/daniel/heMoji/data/data.pkl'

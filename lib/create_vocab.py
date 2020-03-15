@@ -108,7 +108,7 @@ class VocabBuilder():
     def set_tweet_tag(self):
         """ Generates word's label.
         """
-        from src.emoji2label import alle2l as e2l
+        from src.emoji2label import deepe2l as e2l
         for words, label, orig_line in self.word_gen:
             # sentence = (' '.join(words))
 

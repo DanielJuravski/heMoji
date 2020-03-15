@@ -63,7 +63,7 @@ class SentenceTokenizer():
             #                              ignore_emojis=False,
             #                              remove_variation_selectors=True,
             #                              break_replacement=True)
-            from src.emoji2label import alle2l as e2l
+            from src.emoji2label import deepe2l as e2l
             if prod==True:  ## on prod time (user inserts its own sentence), dont drop if that sentence doesn't contain emoji
                 e2l = None
             self.wordgen = TweetWordGenerator(None, allow_unicode_text=True, wanted_emojis=e2l)
@@ -127,7 +127,7 @@ class SentenceTokenizer():
             infos.append(s_info)
             next_insert += 1
 
-        """# For standard word generators all sentences should be tokenized
+        # For standard word generators all sentences should be tokenized
         # this is not necessarily the case for custom wordgenerators as they
         # may filter the sentences etc.
         if not self.uses_custom_wordgen and not self.ignore_sentences_with_only_custom:
@@ -135,9 +135,9 @@ class SentenceTokenizer():
         else:
             # adjust based on actual tokens received
             tokens = tokens[:next_insert]
-            infos = infos[:next_insert]"""
-        tokens = tokens[:next_insert]
-        infos = infos[:next_insert]
+            infos = infos[:next_insert]
+        # tokens = tokens[:next_insert]
+        # infos = infos[:next_insert]
 
         return tokens, infos, self.wordgen.stats
 
