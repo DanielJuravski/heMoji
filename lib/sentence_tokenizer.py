@@ -26,7 +26,7 @@ class SentenceTokenizer():
 
             pre_data(my): Optional. True - If the sentences are for learning (train/dev/test) process,
                will be used to validate that there isn't any UNKs in these sentences (because the vocab is built
-               ut of them)
+               out of them)
 
             uint(my): by default is 16. when loading super large vocabs, we need use 32.
         """
@@ -127,7 +127,7 @@ class SentenceTokenizer():
             infos.append(s_info)
             next_insert += 1
 
-        # For standard word generators all sentences should be tokenized
+        """# For standard word generators all sentences should be tokenized
         # this is not necessarily the case for custom wordgenerators as they
         # may filter the sentences etc.
         if not self.uses_custom_wordgen and not self.ignore_sentences_with_only_custom:
@@ -135,7 +135,10 @@ class SentenceTokenizer():
         else:
             # adjust based on actual tokens received
             tokens = tokens[:next_insert]
-            infos = infos[:next_insert]
+            infos = infos[:next_insert]"""
+        tokens = tokens[:next_insert]
+        infos = infos[:next_insert]
+
         return tokens, infos, self.wordgen.stats
 
     def find_tokens(self, words):
