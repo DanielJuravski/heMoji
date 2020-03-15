@@ -82,6 +82,12 @@ def getArgs():
     else:
         params["final_dropout_rate"] = DROPOUT_FINAL
 
+    if '--gpu' in sys.argv:
+        option_i = int(sys.argv.index('--gpu'))
+        params["gpu"] = float(sys.argv[option_i + 1])
+    else:
+        params["gpu"] = "-1"
+
     print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
 
     for (k,v) in params.iteritems():
@@ -156,7 +162,8 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
 
     model = hemoji_architecture(nb_classes=nb_classes, nb_tokens=vocab_size, maxlen=params["maxlen"],
                                 embed_dropout_rate=params["embed_dropout_rate"],
-                                final_dropout_rate=params["final_dropout_rate"])
+                                final_dropout_rate=params["final_dropout_rate"],
+                                gpu=params["gpu"])
     model.summary()
 
     #import tensorflow.compat.v1 as tf
@@ -244,7 +251,7 @@ def saveArtifacts(model, h, test_acc, test_loss, params):
 
 if __name__ == '__main__':
     """
-    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 80 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0
+    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 80 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0 --gpu 0
     Train heMoji model
     """
     data_file, vocab_file, params = getArgs()

@@ -122,7 +122,7 @@ def deepmoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
     return model
 
 
-def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, embed_dropout_rate=0, final_dropout_rate=0, embed_l2=1E-6, return_attention=False):
+def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, embed_dropout_rate=0, final_dropout_rate=0, embed_l2=1E-6, return_attention=False, gpu="-1"):
     """
     Returns the DeepMoji architecture uninitialized and
     without using the pretrained model weights.
@@ -141,6 +141,8 @@ def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, emb
     # Returns:
         Model with the given parameters.
     """
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu
     # define embedding layer that turns word tokens into vectors
     # an activation function is used to bound the values of the embedding
     model_input = Input(shape=(maxlen,), dtype='int32')
