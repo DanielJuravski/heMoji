@@ -9,7 +9,7 @@ import datetime
 
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
-from src.emoji2label import e2l
+from src.emoji2label import deepe2l as e2l
 
 
 DATA_FILE_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
@@ -81,6 +81,12 @@ def getArgs():
         params["final_dropout_rate"] = float(sys.argv[option_i + 1])
     else:
         params["final_dropout_rate"] = DROPOUT_FINAL
+
+    if '--gpu' in sys.argv:
+        option_i = int(sys.argv.index('--gpu'))
+        params["gpu"] = sys.argv[option_i + 1]
+    else:
+        params["gpu"] = "-1"
 
     print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
 
@@ -156,12 +162,15 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
 
     model = hemoji_architecture(nb_classes=nb_classes, nb_tokens=vocab_size, maxlen=params["maxlen"],
                                 embed_dropout_rate=params["embed_dropout_rate"],
-                                final_dropout_rate=params["final_dropout_rate"])
+                                final_dropout_rate=params["final_dropout_rate"],
+                                gpu=params["gpu"])
     model.summary()
 
+    #import tensorflow.compat.v1 as tf
+    # run_opts = tf.RunOptions(report_tensor_allocations_upon_oom = True)
     model.compile(loss='sparse_categorical_crossentropy',
                   optimizer='adam',
-                  metrics=['accuracy'])
+                  metrics=['accuracy'])#,options = run_opts)
 
     print('Train...')
     h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
@@ -242,7 +251,7 @@ def saveArtifacts(model, h, test_acc, test_loss, params):
 
 if __name__ == '__main__':
     """
-    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 50 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0
+    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 80 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0 --gpu 0
     Train heMoji model
     """
     data_file, vocab_file, params = getArgs()

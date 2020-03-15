@@ -3,6 +3,28 @@
 
 from __future__ import print_function, division
 
+import numpy as np
+###
+#import os
+#os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+
+#from keras import backend as K
+#import keras
+#import tensorflow.compat.v1 as tf
+
+#from tensorflow.keras import backend
+#tf.disable_v2_behavior()
+
+#config = tf.ConfigProto()
+#config.gpu_options.allow_growth=True
+#sess = tf.Session(config=config)
+#K.set_session(sess)
+
+#config = tf.ConfigProto( device_count = {'GPU': 1} )
+#sess = tf.Session(config=config)
+#keras.backend.set_session(sess)
+###
+
 from keras.models import Model
 from keras.layers.merge import concatenate
 from keras.layers import Input, Bidirectional, Embedding, Dense, Dropout, SpatialDropout1D, LSTM, Activation
@@ -100,7 +122,7 @@ def deepmoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
     return model
 
 
-def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, embed_dropout_rate=0, final_dropout_rate=0, embed_l2=1E-6, return_attention=False):
+def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, embed_dropout_rate=0, final_dropout_rate=0, embed_l2=1E-6, return_attention=False, gpu="-1"):
     """
     Returns the DeepMoji architecture uninitialized and
     without using the pretrained model weights.
@@ -119,6 +141,8 @@ def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, emb
     # Returns:
         Model with the given parameters.
     """
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu
     # define embedding layer that turns word tokens into vectors
     # an activation function is used to bound the values of the embedding
     model_input = Input(shape=(maxlen,), dtype='int32')
