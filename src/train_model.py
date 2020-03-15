@@ -166,22 +166,22 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
                                 gpu=params["gpu"])
     model.summary()
 
-    #import tensorflow.compat.v1 as tf
-    # run_opts = tf.RunOptions(report_tensor_allocations_upon_oom = True)
     model.compile(loss='sparse_categorical_crossentropy',
                   optimizer='adam',
-                  metrics=['accuracy'])#,options = run_opts)
+                  metrics=['accuracy', 'sparse_top_k_categorical_accuracy'])
 
     print('Train...')
     h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
 
-    test_loss, test_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
+    test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
     print('Test loss:', test_loss)
     print('Test accuracy:', test_acc)
+    print('Test top5 accuracy:', test_top5_acc)
+
 
     printTime(key='train_end', msg="End Training X,Y data")
 
-    return h, model, test_loss, test_acc
+    return h, model, test_loss, test_acc, test_top5_acc
 
 
 def makeGraphs(train_acc, train_loss, val_acc, val_loss, params):
@@ -205,7 +205,7 @@ def makeGraphs(train_acc, train_loss, val_acc, val_loss, params):
     plt.savefig(fig_name)
 
 
-def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, params):
+def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, params, test_top5_acc):
     stat_file = params["logs_dir"] + "stat.txt"
     print("Printing statistics to: {0}".format(stat_file))
     with open(stat_file, 'w') as f:
@@ -214,6 +214,7 @@ def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, par
         val_acc_str = "Val acc: {}\n".format(val_acc)
         vak_loss_str = "Val loss: {}\n".format(val_loss)
         test_acc_str = "Test acc: {}\n".format(test_acc)
+        test_top5_acc_str = "Test top5 acc: {}\n".format(test_top5_acc)
         test_loss_str = "Test loss: {}\n".format(test_loss)
 
         f.writelines(train_acc_str)
@@ -221,6 +222,7 @@ def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, par
         f.writelines(val_acc_str)
         f.writelines(vak_loss_str)
         f.writelines(test_acc_str)
+        f.writelines(test_top5_acc_str)
         f.writelines(test_loss_str)
 
         # times
@@ -232,7 +234,7 @@ def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, par
         f.writelines(msg)
 
 
-def saveArtifacts(model, h, test_acc, test_loss, params):
+def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
     train_acc = h.history['acc']
     train_loss = h.history['loss']
     val_acc = h.history['val_acc']
@@ -241,7 +243,7 @@ def saveArtifacts(model, h, test_acc, test_loss, params):
     # acc/loss graphs
     makeGraphs(train_acc, train_loss, val_acc, val_loss, params)
     # params
-    saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, params)
+    saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, params, test_top5_acc)
 
     # save model
     model_path = params["logs_dir"] + "model.hdf5"
@@ -261,9 +263,9 @@ if __name__ == '__main__':
     (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test, params)
 
     # model
-    h, model, test_loss, test_acc = trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params)
+    h, model, test_loss, test_acc, test_top5_acc = trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params)
 
-    saveArtifacts(model, h, test_acc, test_loss, params)
+    saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc)
 
     print("Done successfully.")
 
