@@ -148,8 +148,8 @@ class SentenceTokenizer():
             try:
                 tokens.append(self.vocabulary[w])
             except KeyError:
-                if self.pre_data:
-                    print("There is an UNK in train data!")
+                # if self.pre_data:
+                #     print("There is an UNK in train data!")
                 # tokens.append(self.unknown_value)
                 tokens.append(self.vocabulary["CUSTOM_UNKNOWN"])  # unk word shouldn't be hardcoded val of 1
         return tokens
