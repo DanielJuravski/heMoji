@@ -15,8 +15,8 @@ from src.emoji2label import deepe2l as e2l
 DATA_FILE_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
 VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
 
-DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
-VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_3G_5rare.json'
+# DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
+# VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_3G_5rare.json'
 
 MAXLEN = 80
 BATCH_SIZE = 32
@@ -187,10 +187,12 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
     return h, model, test_loss, test_acc, test_top5_acc
 
 
-def makeGraphs(train_acc, train_loss, val_acc, val_loss, params):
+def makeGraphs(train_acc, train_sparse_top_k_categorical_accuracy, train_loss, val_acc, val_sparse_top_k_categorical_accuracy, val_loss, params):
     # acc graph
     plt.plot(train_acc, label="Train")
     plt.plot(val_acc, label="Val")
+    plt.plot(train_sparse_top_k_categorical_accuracy, label="Train top5")
+    plt.plot(val_sparse_top_k_categorical_accuracy, label="Val top5")
     plt.gca().legend()
     # plt.show()
     fig_name = params["logs_dir"] + "acc.png"
@@ -208,12 +210,16 @@ def makeGraphs(train_acc, train_loss, val_acc, val_loss, params):
     plt.savefig(fig_name)
 
 
-def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, params, test_top5_acc):
+def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
+              val_acc, val_sparse_top_k_categorical_accuracy, val_loss,
+              test_acc, test_top5_acc, test_loss, params):
     stat_file = params["logs_dir"] + "stat.txt"
     print("Printing statistics to: {0}".format(stat_file))
     with open(stat_file, 'w') as f:
         train_acc_str = "Train acc: {}\n".format(train_acc)
+        train_sparse_top_k_categorical_accuracy = "Train top5 acc: {}\n".format(train_sparse_top_k_categorical_accuracy)
         train_loss_str = "Train loss: {}\n".format(train_loss)
+        val_sparse_top_k_categorical_accuracy = "Val top5 acc: {}\n".format(val_sparse_top_k_categorical_accuracy)
         val_acc_str = "Val acc: {}\n".format(val_acc)
         vak_loss_str = "Val loss: {}\n".format(val_loss)
         test_acc_str = "Test acc: {}\n".format(test_acc)
@@ -221,8 +227,10 @@ def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, par
         test_loss_str = "Test loss: {}\n".format(test_loss)
 
         f.writelines(train_acc_str)
+        f.writelines(train_sparse_top_k_categorical_accuracy)
         f.writelines(train_loss_str)
         f.writelines(val_acc_str)
+        f.writelines(val_sparse_top_k_categorical_accuracy)
         f.writelines(vak_loss_str)
         f.writelines(test_acc_str)
         f.writelines(test_top5_acc_str)
@@ -239,14 +247,18 @@ def saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, par
 
 def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
     train_acc = h.history['acc']
+    train_sparse_top_k_categorical_accuracy = h.history['sparse_top_k_categorical_accuracy']
     train_loss = h.history['loss']
     val_acc = h.history['val_acc']
+    val_sparse_top_k_categorical_accuracy = h.history['val_sparse_top_k_categorical_accuracy']
     val_loss = h.history['val_loss']
 
     # acc/loss graphs
-    makeGraphs(train_acc, train_loss, val_acc, val_loss, params)
+    makeGraphs(train_acc, train_sparse_top_k_categorical_accuracy, train_loss, val_acc, val_sparse_top_k_categorical_accuracy, val_loss, params)
     # params
-    saveStats(train_acc, train_loss, val_acc, val_loss, test_acc, test_loss, params, test_top5_acc)
+    saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
+              val_acc, val_sparse_top_k_categorical_accuracy, val_loss,
+              test_acc, test_top5_acc, test_loss, params)
 
     # save model
     model_path = params["logs_dir"] + "model.hdf5"
