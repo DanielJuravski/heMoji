@@ -84,7 +84,7 @@ def getArgs():
 
     if '--gpu' in sys.argv:
         option_i = int(sys.argv.index('--gpu'))
-        params["gpu"] = float(sys.argv[option_i + 1])
+        params["gpu"] = sys.argv[option_i + 1]
     else:
         params["gpu"] = "-1"
 
