@@ -10,9 +10,10 @@ import datetime
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
 from src.emoji2label import deepe2l as e2l
+from data_generator import DataGenerator, split_data, gen
 
 
-DATA_FILE_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
+DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
 VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
 
 # DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
@@ -173,14 +174,18 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
                   optimizer='adam',
                   metrics=['accuracy', 'sparse_top_k_categorical_accuracy'])
 
-    print('Train...')
-    h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
+    print('Splitting data for generator ...')
+    train_d, steps_per_epoch = split_data(x_train, y_train, batch_size=params["batch_size"])
+
+    print('Train ...')
+    h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint'+str(params["uint"]), dim=params["maxlen"]),
+                            steps_per_epoch=steps_per_epoch,
+                            use_multiprocessing=False, workers=1, epochs=params["epochs"], validation_data=(x_dev, y_dev))
 
     test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
     print('Test loss:', test_loss)
     print('Test accuracy:', test_acc)
     print('Test top5 accuracy:', test_top5_acc)
-
 
     printTime(key='train_end', msg="End Training X,Y data")
 
