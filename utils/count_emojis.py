@@ -4,6 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
+from collections import Counter
 
 from src.emoji2label import deepe2l as e2l
 from src.emoji2label import l2deepe as l2e
@@ -36,4 +37,20 @@ file_name = DATA_FILE_PATH.split('.')[0] + '_emojis_count.png'
 fig = plt.gcf()
 fig.set_size_inches((18, 8), forward=False)
 plt.savefig(file_name, dpi=1200)
+print('Figure saved successfully')
+
+
+d = Counter(Y)
+common_pairs = d.most_common()
+file_name = DATA_FILE_PATH.split('.')[0] + '_emojis_freq.txt'
+with open(file_name, 'w') as f:
+    for c in common_pairs:
+        emoji_index = c[0]
+        emoji_freq = c[1]
+        emoji_unicode = l2e[emoji_index]
+        line = str(emoji_index) + '\t' + str(emoji_unicode.encode('utf-8')) + '\t' + str(emoji_freq)
+        f.writelines(line)
+        f.writelines('\n')
+print('freq.txt saved successfully')
+
 
