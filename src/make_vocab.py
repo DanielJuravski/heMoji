@@ -41,7 +41,7 @@ def make(tweets_text_file, vocab_file, threshold):
 
 if __name__ == '__main__':
     """
-    Usage: python make_vocab.py [TWEETS_TEXT_FILE] [VOCAB_FILE]
+    Usage: python make_vocab.py [TWEETS_TEXT_FILE] [VOCAB_FILE] [THRESHOLD]
     creating vocab at the form of ["word": token_number]
     """
     tweets_text_file, vocab_file, threshold = getArgs()
