@@ -107,15 +107,13 @@ def split_data(X, Y, batch_size):
     return d, steps_per_epoch
 
 
-def gen(d, batch_size, dtype, dim):
-    classes = d.keys()
-    # n_classes = len(classes)
-
+def gen(d, batch_size, dtype, dim, n_classes):
     while True:
         X = np.empty((batch_size, dim), dtype=dtype)
         y = np.empty((batch_size), dtype=dtype)
 
-        labels = np.random.choice(classes, batch_size, replace=False)
+        # labels = np.random.choice(classes, batch_size, replace=False)
+        labels = np.random.randint(n_classes, size=batch_size)  # discrete uniform
 
         # Generate data
         for i, label in enumerate(labels):

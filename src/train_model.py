@@ -6,6 +6,7 @@ import json
 from keras.preprocessing import sequence
 import matplotlib.pyplot as plt
 import datetime
+import subprocess
 
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
@@ -176,9 +177,11 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
 
     print('Splitting data for generator ...')
     train_d, steps_per_epoch = split_data(x_train, y_train, batch_size=params["batch_size"])
+    classes = train_d.keys()
+    n_classes = len(classes)
 
     print('Train ...')
-    h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint'+str(params["uint"]), dim=params["maxlen"]),
+    h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint'+str(params["uint"]), dim=params["maxlen"], n_classes=n_classes),
                             steps_per_epoch=steps_per_epoch,
                             use_multiprocessing=False, workers=1, epochs=params["epochs"], validation_data=(x_dev, y_dev))
 
@@ -221,6 +224,12 @@ def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
     stat_file = params["logs_dir"] + "stat.txt"
     print("Printing statistics to: {0}".format(stat_file))
     with open(stat_file, 'w') as f:
+        # git commit
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip()
+        git_commit_str = "Git commit: {}\n".format(git_commit)
+        f.writelines(git_commit_str)
+
+        # model stats
         train_acc_str = "Train acc: {}\n".format(train_acc)
         train_sparse_top_k_categorical_accuracy = "Train top5 acc: {}\n".format(train_sparse_top_k_categorical_accuracy)
         train_loss_str = "Train loss: {}\n".format(train_loss)
@@ -230,7 +239,6 @@ def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
         test_acc_str = "Test acc: {}\n".format(test_acc)
         test_top5_acc_str = "Test top5 acc: {}\n".format(test_top5_acc)
         test_loss_str = "Test loss: {}\n".format(test_loss)
-
         f.writelines(train_acc_str)
         f.writelines(train_sparse_top_k_categorical_accuracy)
         f.writelines(train_loss_str)
