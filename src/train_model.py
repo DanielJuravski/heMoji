@@ -228,6 +228,11 @@ def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
         git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip()
         git_commit_str = "Git commit: {}\n".format(git_commit)
         f.writelines(git_commit_str)
+        
+        # hostname
+        hostname = subprocess.check_output(["hostname"]).strip()
+        hostname_str = "Hostname: {}\n".format(hostname)
+        f.writelines(hostname_str)
 
         # model stats
         train_acc_str = "Train acc: {}\n".format(train_acc)
