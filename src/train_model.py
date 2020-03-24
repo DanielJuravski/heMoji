@@ -100,13 +100,13 @@ def getArgs():
 
     print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
 
-    if '--data' in sys.argv:
-        option_i = bool(sys.argv.index('--data'))
-        params["data"] = sys.argv[option_i + 1]
+    if '--data_type' in sys.argv:
+        option_i = bool(sys.argv.index('--data_type'))
+        params["data_type"] = sys.argv[option_i + 1]
     else:
-        params["data"] = "deep"
-    e2l_str = params["data"] + "e2l"
-    l2e_str = "l2e" + params["data"]
+        params["data_type"] = "deep"
+    e2l_str = params["data_type"] + "e2l"
+    l2e_str = "l2e" + params["data_type"]
     exec "from src.emoji2label import %s as e2l" % e2l_str
     exec "from src.emoji2label import %s as l2e" % l2e_str
 
@@ -320,7 +320,7 @@ def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
 
 if __name__ == '__main__':
     """
-    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 80 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0 --gpu 0
+    Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 80 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0 --gpu 0 --train_data_gen --data data01 
     Train heMoji model
     """
     data_file, vocab_file, params, e2l, l2e = getArgs()
