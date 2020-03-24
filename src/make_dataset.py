@@ -11,10 +11,10 @@ DATA = "deep"
 
 
 def getArgs():
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 4:
         tweets_text_file = sys.argv[1]
         data_file = sys.argv[2]
-        data = sys.argv[2]
+        data = sys.argv[3]
     else:
         tweets_text_file = TWEETS_TEXT_FILE
         data_file = DATA_PKL_FILE
