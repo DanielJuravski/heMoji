@@ -21,7 +21,7 @@ class SentenceTokenizer():
 
     def __init__(self, vocabulary, fixed_length, custom_wordgen=None,
                  ignore_sentences_with_only_custom=False, masking_value=None,
-                 unknown_value=1, prod=False, pre_data=False, uint=16):
+                 unknown_value=1, prod=False, pre_data=False, uint=16, wanted_emojis=None):
         """ Needs a dictionary as input for the vocabulary.
 
             pre_data(my): Optional. True - If the sentences are for learning (train/dev/test) process,
@@ -43,6 +43,7 @@ class SentenceTokenizer():
         self.ignore_sentences_with_only_custom = ignore_sentences_with_only_custom
         self.unknown_value = unknown_value
         self.pre_data = pre_data
+        self.wanted_emojis=wanted_emojis
 
         # originally was masking_value=0 in the function call since in the vocab CUSTOM_MASK was always=0,
         # I set it to self.vocabulary["CUSTOM_MASK"] value, since now the CUSTOM_MASK value is dynamic
@@ -63,7 +64,7 @@ class SentenceTokenizer():
             #                              ignore_emojis=False,
             #                              remove_variation_selectors=True,
             #                              break_replacement=True)
-            from src.emoji2label import deepe2l as e2l
+            e2l = self.wanted_emojis
             if prod==True:  ## on prod time (user inserts its own sentence), dont drop if that sentence doesn't contain emoji
                 e2l = None
             self.wordgen = TweetWordGenerator(None, allow_unicode_text=True, wanted_emojis=e2l)

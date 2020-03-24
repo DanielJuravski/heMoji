@@ -10,18 +10,17 @@ import subprocess
 
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
-from src.emoji2label import deepe2l as e2l
 from data_generator import DataGenerator, split_data, gen
 
 
-DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
+DATA_FILE_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
 VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
 
 # DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
 # VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_3G_5rare.json'
 
 MAXLEN = 80
-BATCH_SIZE = 32
+BATCH_SIZE = 60
 EPOCHS = 3
 UINT = 16
 DROPOUT_EMB = 0.0
@@ -93,13 +92,31 @@ def getArgs():
     else:
         params["gpu"] = "-1"
 
+    if '--train_data_gen' in sys.argv:
+        # option_i = bool(sys.argv.index('--train_data_gen'))
+        params["train_data_gen"] = True
+    else:
+        params["train_data_gen"] = False
+
+    print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
+
+    if '--data' in sys.argv:
+        option_i = bool(sys.argv.index('--data'))
+        params["data"] = sys.argv[option_i + 1]
+    else:
+        params["data"] = "deep"
+    e2l_str = params["data"] + "e2l"
+    l2e_str = "l2e" + params["data"]
+    exec "from src.emoji2label import %s as e2l" % e2l_str
+    exec "from src.emoji2label import %s as l2e" % l2e_str
+
     print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
 
     for (k,v) in params.iteritems():
         print("param:{0}, value:{1}".format(k,v))
     print("\n")
 
-    return data_file, vocab_file, params
+    return data_file, vocab_file, params, e2l, l2e
 
 
 def loadVocab(vocab_file):
@@ -159,7 +176,11 @@ def padData(x_train, x_dev, x_test, params):
     return x_train, x_dev, x_test
 
 
-def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
+def in_top_k(y_true, y_pred):
+    return keras.backend.in_top_k(y_pred, y_true, 5)
+
+
+def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2l):
     printTime(key='train_start', msg="Start Training X,Y data")
     print('Build model...')
     nb_classes = len(e2l)
@@ -181,9 +202,15 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params):
     n_classes = len(classes)
 
     print('Train ...')
-    h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint'+str(params["uint"]), dim=params["maxlen"], n_classes=n_classes),
-                            steps_per_epoch=steps_per_epoch,
-                            use_multiprocessing=False, workers=1, epochs=params["epochs"], validation_data=(x_dev, y_dev))
+    if params["train_data_gen"]:  # probably real training mode
+        h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint' + str(params["uint"]), dim=params["maxlen"], n_classes=n_classes),
+                                steps_per_epoch=steps_per_epoch,
+                                use_multiprocessing=False,
+                                workers=1,
+                                epochs=params["epochs"],
+                                validation_data=(x_dev, y_dev))
+    else:  # probably debug/dev mode
+        h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
 
     test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
     print('Test loss:', test_loss)
@@ -278,20 +305,27 @@ def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
     print("Saving model to: {0}".format(model_path))
     model.save(model_path)
 
+    model_json = model.to_json()
+    with open(params["logs_dir"] + "model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(params["logs_dir"] + "model.h5")
+    print("Saved model to disk")
+
 
 if __name__ == '__main__':
     """
     Usage: ./wrappers/train_model.sh --data ../data/data_3G.pkl --vocab ../data/vocab_3G.json --logs_dir ../logs/ --maxlen 80 --batch_size 32 --epochs 15 --uint 16 --embed_dropout_rate 0 --final_dropout_rate 0 --gpu 0
     Train heMoji model
     """
-    data_file, vocab_file, params = getArgs()
+    data_file, vocab_file, params, e2l, l2e = getArgs()
     (X, Y) = loadData(data_file)
     vocab = loadVocab(vocab_file)
     (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, params)
     (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test, params)
 
     # model
-    h, model, test_loss, test_acc, test_top5_acc = trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params)
+    h, model, test_loss, test_acc, test_top5_acc = trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2l)
 
     saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc)
 
