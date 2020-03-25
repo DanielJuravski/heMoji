@@ -4,14 +4,14 @@ from collections import defaultdict
 
 LARGE_DATA = '/home/daniel/heMoji/data/data.pkl'
 SMALL_DATA = '/home/daniel/heMoji/data/data_mini.pkl'
-N = 10
+N = 5
 
 
 def get_args():
     if len(sys.argv) == 4:
         large_data_path = sys.argv[1]
         small_data_path = sys.argv[2]
-        n = sys.argv[3]
+        n = int(sys.argv[3])
     else:
         large_data_path = LARGE_DATA
         small_data_path = SMALL_DATA
@@ -20,7 +20,7 @@ def get_args():
     return large_data_path, small_data_path, n
 
 
-def small_data_ready(classes_instances):
+def small_data_ready(classes_instances, n):
     """check the number instances of each class
     if every class has n instances, stop the large sampling"""
     if len(classes_instances) == 0:  # if in the first iteration when the dict is empty full will be True,
@@ -49,7 +49,7 @@ def minimize(large_data_path, n):
     Y_small = []
     classes_instances = defaultdict(int)
     for x, y in zip(X_large, Y_large):
-        if not small_data_ready(classes_instances):
+        if not small_data_ready(classes_instances, n):
             if classes_instances[y] < n:
                 X_small.append(x)
                 Y_small.append(y)
