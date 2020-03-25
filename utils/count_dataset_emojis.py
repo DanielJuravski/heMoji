@@ -6,15 +6,20 @@ import matplotlib.pyplot as plt
 import sys
 from collections import Counter
 
-# from src.emoji2label import deepe2l as e2l
-# from src.emoji2label import l2deepe as l2e
-
 
 DATA_FILE_PATH = '/home/daniel/heMoji/data/data.pkl'
-EMOJIS_NUM = len(l2e)
+DATA_TYPE = 'deep'
 
-if len(sys.argv) == 2:
+
+if len(sys.argv) == 3:
     DATA_FILE_PATH = sys.argv[1]
+    DATA_TYPE = sys.argv[2]
+e2l_str = DATA_TYPE + "e2l"
+l2e_str = "l2e" + DATA_TYPE
+exec "from src.emoji2label import %s as e2l" % e2l_str
+exec "from src.emoji2label import %s as l2e" % l2e_str
+
+EMOJIS_NUM = len(l2e)
 
 with open(DATA_FILE_PATH, 'rb') as f:
     data = pickle.load(f)
