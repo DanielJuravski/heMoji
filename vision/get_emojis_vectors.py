@@ -20,8 +20,8 @@ def get_args():
         output_path = OUTPUT_PATH
         data_type = DATA_TYPE
 
-    e2l_str = DATA_TYPE + "e2l"
-    l2e_str = "l2e" + DATA_TYPE
+    e2l_str = data_type + "e2l"
+    l2e_str = "l2e" + data_type
     exec "from src.emoji2label import %s as e2l" % e2l_str
     exec "from src.emoji2label import %s as l2e" % l2e_str
 
