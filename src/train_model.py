@@ -14,7 +14,7 @@ from data_generator import DataGenerator, split_data, gen
 from vision.correlation import Correlation
 
 
-DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G_data01.pkl'
+DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G_data01_mini.pkl'
 VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_mini.json'
 
 # DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
@@ -181,6 +181,29 @@ def in_top_k(y_true, y_pred):
     return keras.backend.in_top_k(y_pred, y_true, 5)
 
 
+def predict_train_dev_test_for_correlation(model, x_train, x_dev, x_test, y_train, y_dev, y_test, params, l2e):
+    # predict train
+    printTime(key='predict_train', msg="Predicting 'train' data for correlation plots")
+    y_pred_vec = model.predict(x_train)
+    y_pred = y_pred_vec.argmax(axis=1)
+    c = Correlation(y_train, y_pred, l2e, params["logs_dir"], name_prefix='train', save=True)
+    c.make_graphs()
+
+    # predict dev
+    printTime(key='predict_dev', msg="Predicting 'dev' data for correlation plots")
+    y_pred_vec = model.predict(x_dev)
+    y_pred = y_pred_vec.argmax(axis=1)
+    c = Correlation(y_dev, y_pred, l2e, params["logs_dir"], name_prefix='dev', save=True)
+    c.make_graphs()
+
+    # predict test
+    printTime(key='predict_test', msg="Predicting 'test' data for correlation plots")
+    y_pred_vec = model.predict(x_test)
+    y_pred = y_pred_vec.argmax(axis=1)
+    c = Correlation(y_test, y_pred, l2e, params["logs_dir"], name_prefix='test', save=True)
+    c.make_graphs()
+
+
 def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2l):
     printTime(key='train_start', msg="Start Training X,Y data")
     print('Build model...')
@@ -212,24 +235,16 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
     else:  # probably debug/dev mode
         h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
 
-    # one more time dev predict for confusion graphs
-    y_pred_vec = model.predict(x_dev)
-    y_pred = y_pred_vec.argmax(axis=1)
-    c = Correlation(y_dev, y_pred, l2e, params["logs_dir"], name_prefix='dev', save=True)
-    c.make_graphs()
-
     # test data evaluation
     test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
-    y_pred_vec = model.predict(x_test)
-    y_pred = y_pred_vec.argmax(axis=1)
-    # test confusion matrix
-    c = Correlation(y_test, y_pred, l2e, params["logs_dir"], name_prefix='test', save=True)
-    c.make_graphs()
     print('Test loss:', test_loss)
     print('Test accuracy:', test_acc)
     print('Test top5 accuracy:', test_top5_acc)
 
     printTime(key='train_end', msg="End Training X,Y data")
+
+    # predict all data sets for plotting correlation graphs
+    predict_train_dev_test_for_correlation(model, x_train, x_dev, x_test, y_train, y_dev, y_test, params, l2e)
 
     return h, model, test_loss, test_acc, test_top5_acc
 
