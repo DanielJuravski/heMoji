@@ -14,8 +14,8 @@ from lib.attlayer import AttentionWeightedAverage
 
 
 MODEL_PATH = '/home/daniel/heMoji/logs/model_3G_generatorBatch.hdf5'
-DATA_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
-VOCAB_PATH = '/home/daniel/heMoji/data/vocab_mini.json'
+DATA_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
+VOCAB_PATH = '/home/daniel/heMoji/data/vocab_3G.json'
 OUTPUT_PATH = '/home/daniel/heMoji/logs/'
 DATA_TYPE = "deep"
 
@@ -38,7 +38,7 @@ class Correlation():
         self.save = save
 
         # build confusion matrix
-        print("Making confusion matrix & hierarchy graph for {0} data ...".format(name_prefix))
+        print("Making confusion matrix & hierarchy graph for {0} data ...".format(self.name_prefix))
         matrix = confusion_matrix(self.y_gold, self.y_pred, labels=np.asarray(self.l2e.keys()))
         self.df = pd.DataFrame(matrix)
 
