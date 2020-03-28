@@ -17,13 +17,14 @@ class VocabBuilder():
         word generator.
     """
 
-    def __init__(self, word_gen):
+    def __init__(self, word_gen, wanted_emojis):
         # initialize any new key with value of 0
         self.word_counts = defaultdict(lambda: 0, {})
         # self.word_counts = defaultdict()
         self.word_length_limit = 30 * 4
         self.X = []
         self.Y = []
+        self.wanted_emojis = wanted_emojis
 
         for token in SPECIAL_TOKENS:
             assert len(token) < self.word_length_limit
@@ -108,14 +109,13 @@ class VocabBuilder():
     def set_tweet_tag(self):
         """ Generates word's label.
         """
-        from src.emoji2label import deepe2l as e2l
         for words, label, orig_line in self.word_gen:
             # sentence = (' '.join(words))
 
             # make x,y sample for every emoji that appears in the sentence
             # e.g. "sen1_e1_e2_e3" will generate 3 samples (sen1, e1), (sen2, e2), (sen3, e3)
             for e in label['emojis']:
-                e_label = e2l[e]
+                e_label = self.wanted_emojis[e]
                 self.X.append(orig_line.strip('\n'))
                 # self.X.append(' '.join(words))
                 # self.Y.append({'label': '{0}'.format(e_label)})

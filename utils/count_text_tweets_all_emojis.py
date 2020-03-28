@@ -42,7 +42,7 @@ def save(emojis_freq):
 if __name__ == '__main__':
     """
     Load file where every line is string tweet
-    Calculate which emojis are in the data and its freq
+    Calculate which emojis are in the data (pre parsed, raw tweets text) and its freq
     """
     tweets_file = get_params()
     data = load_file(tweets_file)
