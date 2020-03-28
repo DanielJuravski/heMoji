@@ -14,7 +14,7 @@ from data_generator import DataGenerator, split_data, gen
 from vision.correlation import Correlation
 
 
-DATA_FILE_PATH = '/home/daniel/heMoji/data/data_tiny.pkl'
+DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G_data01.pkl'
 VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_mini.json'
 
 # DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
@@ -26,7 +26,7 @@ EPOCHS = 3
 UINT = 16
 DROPOUT_EMB = 0.0
 DROPOUT_FINAL = 0.0
-DATA_TYPE = "deep"
+DATA_TYPE = "data01"
 USE_TRAIN_DATA_GENERATOR = False
 
 TIMES = dict()
@@ -102,7 +102,7 @@ def getArgs():
         params["train_data_gen"] = USE_TRAIN_DATA_GENERATOR
 
     if '--data_type' in sys.argv:
-        option_i = bool(sys.argv.index('--data_type'))
+        option_i = int(sys.argv.index('--data_type'))
         params["data_type"] = sys.argv[option_i + 1]
     else:
         params["data_type"] = DATA_TYPE

@@ -214,7 +214,7 @@ class SentenceTokenizer():
         # Extend vocabulary with training set tokens
         if extend_with > 0:
             wg = WordGenerator(train)
-            vb = VocabBuilder(wg)
+            vb = VocabBuilder(wg, self.wanted_emojis)
             vb.count_all_words()
             added = extend_vocab(self.vocabulary, vb, max_tokens=extend_with)
 
