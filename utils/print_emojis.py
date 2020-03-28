@@ -1,7 +1,7 @@
 """
 PRINTING EMOJIS FROM THE DESIRED DATA_TYPE TO FILE (emojis/DATA_TYPE.txt)
 """
-DATA_TYPE = 'all'
+DATA_TYPE = 'deep'
 
 
 l2e_str = 'l2e' + DATA_TYPE
@@ -13,6 +13,7 @@ file_path = 'emojis/{0}.txt'.format(DATA_TYPE)
 with open(file_path, 'w') as f:
     for l in l2e:
         e_unicode = l2e[l]
-        line = str(l) + '\t' + e_unicode.encode('utf-8')
+        # label_index | unicode_emoji | unicode_str
+        line = str(l) + '\t' + e_unicode.encode('utf-8') + '\t' + e_unicode.encode('unicode-escape')
         f.writelines(line)
         f.writelines('\n')
