@@ -11,20 +11,23 @@ import subprocess
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
 from data_generator import DataGenerator, split_data, gen
+from vision.correlation import Correlation
 
 
-DATA_FILE_PATH = '/home/daniel/heMoji/data/data_mini.pkl'
-VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocabulary.json'
+DATA_FILE_PATH = '/home/daniel/heMoji/data/data_tiny.pkl'
+VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_mini.json'
 
 # DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G.pkl'
 # VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_3G_5rare.json'
 
 MAXLEN = 80
-BATCH_SIZE = 60
+BATCH_SIZE = 64
 EPOCHS = 3
 UINT = 16
 DROPOUT_EMB = 0.0
 DROPOUT_FINAL = 0.0
+DATA_TYPE = "deep"
+USE_TRAIN_DATA_GENERATOR = False
 
 TIMES = dict()
 
@@ -96,15 +99,13 @@ def getArgs():
         # option_i = bool(sys.argv.index('--train_data_gen'))
         params["train_data_gen"] = True
     else:
-        params["train_data_gen"] = False
-
-    print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
+        params["train_data_gen"] = USE_TRAIN_DATA_GENERATOR
 
     if '--data_type' in sys.argv:
         option_i = bool(sys.argv.index('--data_type'))
         params["data_type"] = sys.argv[option_i + 1]
     else:
-        params["data_type"] = "deep"
+        params["data_type"] = DATA_TYPE
     e2l_str = params["data_type"] + "e2l"
     l2e_str = "l2e" + params["data_type"]
     exec "from src.emoji2label import %s as e2l" % e2l_str
@@ -144,10 +145,10 @@ def loadData(data_file):
     return X, Y
 
 
-def splitData(X, Y, params):
+def splitData(X, Y, vocab, params, e2l):
     printTime(key='split_tokenize_start', msg="Start splitting and tokenizing X,Y data")
 
-    st = SentenceTokenizer(vocab, 80, pre_data=True, uint=params["uint"])
+    st = SentenceTokenizer(vocab, 80, pre_data=True, uint=params["uint"], wanted_emojis=e2l)
 
     # Split using the default split ratio [0.7, 0.1, 0.2]
     (x_train, x_dev, x_test), (y_train, y_dev, y_test), added = st.split_train_val_test(X, Y)
@@ -156,7 +157,7 @@ def splitData(X, Y, params):
     # print (y_train, y_dev, y_test)
     # print added
     print(len(x_train), 'train sequences')
-    print(len(x_dev), 'test sequences')
+    print(len(x_dev), 'dev sequences')
     print(len(x_test), 'test sequences')
 
     return (x_train, x_dev, x_test), (y_train, y_dev, y_test)
@@ -196,13 +197,12 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
                   optimizer='adam',
                   metrics=['accuracy', 'sparse_top_k_categorical_accuracy'])
 
-    print('Splitting data for generator ...')
-    train_d, steps_per_epoch = split_data(x_train, y_train, batch_size=params["batch_size"])
-    classes = train_d.keys()
-    n_classes = len(classes)
-
     print('Train ...')
-    if params["train_data_gen"]:  # probably real training mode
+    if params["train_data_gen"]:  # probably real (remote) training mode
+        print('Splitting data for generator ...')
+        train_d, steps_per_epoch = split_data(x_train, y_train, batch_size=params["batch_size"])
+        classes = train_d.keys()
+        n_classes = len(classes)
         h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint' + str(params["uint"]), dim=params["maxlen"], n_classes=n_classes),
                                 steps_per_epoch=steps_per_epoch,
                                 use_multiprocessing=False,
@@ -212,7 +212,19 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
     else:  # probably debug/dev mode
         h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
 
+    # one more time dev predict for confusion graphs
+    y_pred_vec = model.predict(x_dev)
+    y_pred = y_pred_vec.argmax(axis=1)
+    c = Correlation(y_dev, y_pred, l2e, params["logs_dir"], name_prefix='dev', save=True)
+    c.make_graphs()
+
+    # test data evaluation
     test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
+    y_pred_vec = model.predict(x_test)
+    y_pred = y_pred_vec.argmax(axis=1)
+    # test confusion matrix
+    c = Correlation(y_test, y_pred, l2e, params["logs_dir"], name_prefix='test', save=True)
+    c.make_graphs()
     print('Test loss:', test_loss)
     print('Test accuracy:', test_acc)
     print('Test top5 accuracy:', test_top5_acc)
@@ -300,6 +312,7 @@ def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
 
     # acc/loss graphs
     makeGraphs(train_acc, train_sparse_top_k_categorical_accuracy, train_loss, val_acc, val_sparse_top_k_categorical_accuracy, val_loss, params)
+
     # params
     saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
               val_acc, val_sparse_top_k_categorical_accuracy, val_loss,
@@ -326,7 +339,7 @@ if __name__ == '__main__':
     data_file, vocab_file, params, e2l, l2e = getArgs()
     (X, Y) = loadData(data_file)
     vocab = loadVocab(vocab_file)
-    (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, params)
+    (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, vocab, params, e2l)
     (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test, params)
 
     # model
