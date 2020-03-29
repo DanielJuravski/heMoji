@@ -98,7 +98,6 @@ def getArgs():
         params["gpu"] = "-1"
 
     if '--train_data_gen' in sys.argv:
-        # option_i = bool(sys.argv.index('--train_data_gen'))
         params["train_data_gen"] = True
     else:
         params["train_data_gen"] = USE_TRAIN_DATA_GENERATOR
@@ -114,7 +113,7 @@ def getArgs():
     exec "from src.emoji2label import %s as l2e" % l2e_str
 
     if '--loss' in sys.argv:
-        option_i = bool(sys.argv.index('--loss'))
+        option_i = int(sys.argv.index('--loss'))
         val = sys.argv[option_i + 1]
         if val == 'scce': l = 'sparse_categorical_crossentropy'
         if val == 'cce': l = 'categorical_crossentropy'
