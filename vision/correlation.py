@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import pickle
 
 from lib.attlayer import AttentionWeightedAverage
 
@@ -79,10 +80,11 @@ class Correlation():
         plt.close()
 
     def _make_hierachy_graph(self):
+        plt.figure(figsize=(20, 14))
         # build histogram
         Y = hierarchy.distance.pdist(self.df.values, metric='euclidean')
-        Z = hierarchy.linkage(Y, method='single')
-        ax = hierarchy.dendrogram(Z, show_contracted=True)  # ,labels=data.index.tolist())
+        Z = hierarchy.linkage(Y, method='average')
+        ax = hierarchy.dendrogram(Z, show_contracted=True)
 
         if self.save:
             path = self.output_path + "/{0}hierarchy_graph.png".format(self.name_prefix)
@@ -135,19 +137,24 @@ if __name__ == '__main__':
     load model, predict test_set, build confusion matrix, and based on it - hierarchy diagram
     """
     # this should be here instead of the top fo the file to prevent importing loop
-    from src.train_model import loadData, splitData, padData
+    # from src.train_model import loadData, splitData, padData
     model_path, data_path, vocab_path, output_path, data_type, e2l, l2e = get_args()
-    vocab = load_vocab(vocab_path)
-    model = get_model(model_path)
-    (X, Y) = loadData(data_path)
-    params = dict()
-    params["uint"] = 32
-    params["maxlen"] = 80
-    (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, vocab, params, e2l)
-    (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test, params)
-    print("Predicting ...")
-    y_pred_vec = model.predict(x_test)
-    y_pred = y_pred_vec.argmax(axis=1)
+    # vocab = load_vocab(vocab_path)
+    # model = get_model(model_path)
+    # (X, Y) = loadData(data_path)
+    # params = dict()
+    # params["uint"] = 32
+    # params["maxlen"] = 80
+    # (x_train, x_dev, x_test), (y_train, y_dev, y_test) = splitData(X, Y, vocab, params, e2l)
+    # (x_train, x_dev, x_test) = padData(x_train, x_dev, x_test, params)
+    # print("Predicting ...")
+    # y_pred_vec = model.predict(x_test)
+    # y_pred = y_pred_vec.argmax(axis=1)
 
-    c = Correlation(y_test, y_pred, l2e, output_path, save=True)
+    with open('/home/daniel/heMoji/logs/y_pred.pkl', 'rb') as f:
+        y_pred = pickle.load(f)
+    with open('/home/daniel/heMoji/logs/y_gold.pkl', 'rb') as f:
+        y_gold = pickle.load(f)
+
+    c = Correlation(y_gold, y_pred, l2e, output_path, save=False)
     c.make_graphs()
