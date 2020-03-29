@@ -5,6 +5,7 @@ import pickle
 import json
 from keras.preprocessing import sequence
 from keras.utils import to_categorical
+from keras.callbacks import ModelCheckpoint
 import matplotlib.pyplot as plt
 import datetime
 import subprocess
@@ -28,7 +29,7 @@ UINT = 16
 DROPOUT_EMB = 0.0
 DROPOUT_FINAL = 0.0
 DATA_TYPE = "data01"
-USE_TRAIN_DATA_GENERATOR = True
+USE_TRAIN_DATA_GENERATOR = False
 LOSS = 'categorical_crossentropy'
 
 TIMES = dict()
@@ -242,6 +243,11 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
         y_dev = to_categorical(y_dev, num_classes=nb_classes)
         y_test = to_categorical(y_test, num_classes=nb_classes)
 
+    # dynamic model saving (after every epoch)
+    filepath = params["logs_dir"] + "dynamic_model.hdf5"
+    monitor = 'val_' + top_k_metric  # should monitor val loss
+    checkpoint = ModelCheckpoint(filepath, monitor=monitor, verbose=1, save_best_only=True, mode='auto', period=1)
+
     print('Train ...')
     # use data generator for training samples (probably real-remote training mode)
     if params["train_data_gen"]:
@@ -259,7 +265,8 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
                                 use_multiprocessing=False,
                                 workers=1,
                                 epochs=params["epochs"],
-                                validation_data=(x_dev, y_dev))
+                                validation_data=(x_dev, y_dev),
+                                callbacks=[checkpoint])
     # do not use data generator for training samples (probably debug/dev mode)
     else:
         # in categorical_crossentropy loss, parse train y's to one hot vectors (dev & test were parsed above)
@@ -268,7 +275,8 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
         h = model.fit(x=x_train, y=y_train,
                       batch_size=params["batch_size"],
                       epochs=params["epochs"],
-                      validation_data=(x_dev, y_dev))
+                      validation_data=(x_dev, y_dev),
+                      callbacks=[checkpoint])
 
     # test data evaluation
     test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
