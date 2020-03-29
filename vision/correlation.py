@@ -27,8 +27,14 @@ class Correlation():
     2. hierarchy graph
     """
     def __init__(self, y_gold, y_pred, l2e, output_path, name_prefix=None, save=True):
+        # make y_gold vec into 1-dim vec
         self.y_gold = y_gold
+        if len(self.y_gold.shape) > 1:
+            self.y_gold = self.y_gold.argmax(axis=1)
+        # make y_pred vec into 1-dim vec
         self.y_pred = y_pred
+        if len(self.y_pred.shape) > 1:
+            self.y_pred = self.y_pred.argmax(axis=1)
         self.l2e = l2e
         self.output_path = output_path
         if name_prefix is not None:

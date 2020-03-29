@@ -4,6 +4,7 @@ import sys
 import pickle
 import json
 from keras.preprocessing import sequence
+from keras.utils import to_categorical
 import matplotlib.pyplot as plt
 import datetime
 import subprocess
@@ -21,13 +22,14 @@ VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_mini.json'
 # VOCAB_FILE_PATH = '/home/daniel/heMoji/data/vocab_3G_5rare.json'
 
 MAXLEN = 80
-BATCH_SIZE = 64
-EPOCHS = 3
+BATCH_SIZE = 32
+EPOCHS = 2
 UINT = 16
 DROPOUT_EMB = 0.0
 DROPOUT_FINAL = 0.0
 DATA_TYPE = "data01"
-USE_TRAIN_DATA_GENERATOR = False
+USE_TRAIN_DATA_GENERATOR = True
+LOSS = 'categorical_crossentropy'
 
 TIMES = dict()
 
@@ -110,6 +112,15 @@ def getArgs():
     l2e_str = "l2e" + params["data_type"]
     exec "from src.emoji2label import %s as e2l" % e2l_str
     exec "from src.emoji2label import %s as l2e" % l2e_str
+
+    if '--loss' in sys.argv:
+        option_i = bool(sys.argv.index('--loss'))
+        val = sys.argv[option_i + 1]
+        if val == 'scce': l = 'sparse_categorical_crossentropy'
+        if val == 'cce': l = 'categorical_crossentropy'
+        params["loss"] = l
+    else:
+        params["loss"] = LOSS
 
     print("""\nLoading data file: "{0}"\nLoading vocab file: "{1}"\n""".format(data_file, vocab_file))
 
@@ -210,30 +221,55 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
     nb_classes = len(e2l)
     vocab_size = len(vocab)
 
-    model = hemoji_architecture(nb_classes=nb_classes, nb_tokens=vocab_size, maxlen=params["maxlen"],
+    model = hemoji_architecture(nb_classes=nb_classes,
+                                nb_tokens=vocab_size,
+                                maxlen=params["maxlen"],
                                 embed_dropout_rate=params["embed_dropout_rate"],
                                 final_dropout_rate=params["final_dropout_rate"],
                                 gpu=params["gpu"])
     model.summary()
 
-    model.compile(loss='sparse_categorical_crossentropy',
+    # extract loss & top k metric
+    loss = params["loss"]
+    if loss == 'sparse_categorical_crossentropy': top_k_metric = 'sparse_top_k_categorical_accuracy'
+    if loss == 'categorical_crossentropy': top_k_metric = 'top_k_categorical_accuracy'
+
+    model.compile(loss=loss,
                   optimizer='adam',
-                  metrics=['accuracy', 'sparse_top_k_categorical_accuracy'])
+                  metrics=['accuracy', top_k_metric])
+
+    # in categorical_crossentropy loss, parse dev & test y's to one hot vectors
+    if loss == 'categorical_crossentropy':
+        y_dev = to_categorical(y_dev, num_classes=nb_classes)
+        y_test = to_categorical(y_test, num_classes=nb_classes)
 
     print('Train ...')
-    if params["train_data_gen"]:  # probably real (remote) training mode
+    # use data generator for training samples (probably real-remote training mode)
+    if params["train_data_gen"]:
         print('Splitting data for generator ...')
         train_d, steps_per_epoch = split_data(x_train, y_train, batch_size=params["batch_size"])
         classes = train_d.keys()
         n_classes = len(classes)
-        h = model.fit_generator(generator=gen(train_d, batch_size=params["batch_size"], dtype='uint' + str(params["uint"]), dim=params["maxlen"], n_classes=n_classes),
+        h = model.fit_generator(generator=gen(train_d,
+                                              batch_size=params["batch_size"],
+                                              dtype='uint' + str(params["uint"]),
+                                              dim=params["maxlen"],
+                                              n_classes=n_classes,
+                                              loss=params["loss"]),
                                 steps_per_epoch=steps_per_epoch,
                                 use_multiprocessing=False,
                                 workers=1,
                                 epochs=params["epochs"],
                                 validation_data=(x_dev, y_dev))
-    else:  # probably debug/dev mode
-        h = model.fit(x_train, y_train, batch_size=params["batch_size"], epochs=params["epochs"], validation_data=(x_dev, y_dev))
+    # do not use data generator for training samples (probably debug/dev mode)
+    else:
+        # in categorical_crossentropy loss, parse train y's to one hot vectors (dev & test were parsed above)
+        if loss == 'categorical_crossentropy':
+            y_train = to_categorical(y_train, num_classes=nb_classes)
+        h = model.fit(x=x_train, y=y_train,
+                      batch_size=params["batch_size"],
+                      epochs=params["epochs"],
+                      validation_data=(x_dev, y_dev))
 
     # test data evaluation
     test_loss, test_acc, test_top5_acc = model.evaluate(x_test, y_test, batch_size=params["batch_size"])
@@ -249,12 +285,12 @@ def trainModel(vocab, x_train, x_dev, x_test, y_train, y_dev, y_test, params, e2
     return h, model, test_loss, test_acc, test_top5_acc
 
 
-def makeGraphs(train_acc, train_sparse_top_k_categorical_accuracy, train_loss, val_acc, val_sparse_top_k_categorical_accuracy, val_loss, params):
+def makeGraphs(train_acc, train_top_k_categorical_accuracy, train_loss, val_acc, val_top_k_categorical_accuracy, val_loss, params):
     # acc graph
     plt.plot(train_acc, label="Train")
     plt.plot(val_acc, label="Val")
-    plt.plot(train_sparse_top_k_categorical_accuracy, label="Train top5")
-    plt.plot(val_sparse_top_k_categorical_accuracy, label="Val top5")
+    plt.plot(train_top_k_categorical_accuracy, label="Train top5")
+    plt.plot(val_top_k_categorical_accuracy, label="Val top5")
     plt.gca().legend()
     # plt.show()
     fig_name = params["logs_dir"] + "acc.png"
@@ -272,8 +308,8 @@ def makeGraphs(train_acc, train_sparse_top_k_categorical_accuracy, train_loss, v
     plt.savefig(fig_name)
 
 
-def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
-              val_acc, val_sparse_top_k_categorical_accuracy, val_loss,
+def saveStats(train_acc, train_top_k_categorical_accuracy, train_loss,
+              val_acc, val_top_k_categorical_accuracy, val_loss,
               test_acc, test_top5_acc, test_loss, params):
     stat_file = params["logs_dir"] + "stat.txt"
     print("Printing statistics to: {0}".format(stat_file))
@@ -290,9 +326,9 @@ def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
 
         # model stats
         train_acc_str = "Train acc: {}\n".format(train_acc)
-        train_sparse_top_k_categorical_accuracy = "Train top5 acc: {}\n".format(train_sparse_top_k_categorical_accuracy)
+        train_sparse_top_k_categorical_accuracy = "Train top5 acc: {}\n".format(train_top_k_categorical_accuracy)
         train_loss_str = "Train loss: {}\n".format(train_loss)
-        val_sparse_top_k_categorical_accuracy = "Val top5 acc: {}\n".format(val_sparse_top_k_categorical_accuracy)
+        val_sparse_top_k_categorical_accuracy = "Val top5 acc: {}\n".format(val_top_k_categorical_accuracy)
         val_acc_str = "Val acc: {}\n".format(val_acc)
         vak_loss_str = "Val loss: {}\n".format(val_loss)
         test_acc_str = "Test acc: {}\n".format(test_acc)
@@ -318,19 +354,24 @@ def saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
 
 
 def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
+    # extract loss & top k metric
+    loss = params["loss"]
+    if loss == 'sparse_categorical_crossentropy': top_k_acc_history = 'sparse_top_k_categorical_accuracy'
+    if loss == 'categorical_crossentropy': top_k_acc_history = 'top_k_categorical_accuracy'
+
     train_acc = h.history['acc']
-    train_sparse_top_k_categorical_accuracy = h.history['sparse_top_k_categorical_accuracy']
+    train_top_k_categorical_accuracy = h.history[top_k_acc_history]
     train_loss = h.history['loss']
     val_acc = h.history['val_acc']
-    val_sparse_top_k_categorical_accuracy = h.history['val_sparse_top_k_categorical_accuracy']
+    val_top_k_categorical_accuracy = h.history['val_' + top_k_acc_history]
     val_loss = h.history['val_loss']
 
     # acc/loss graphs
-    makeGraphs(train_acc, train_sparse_top_k_categorical_accuracy, train_loss, val_acc, val_sparse_top_k_categorical_accuracy, val_loss, params)
+    makeGraphs(train_acc, train_top_k_categorical_accuracy, train_loss, val_acc, val_top_k_categorical_accuracy, val_loss, params)
 
     # params
-    saveStats(train_acc, train_sparse_top_k_categorical_accuracy, train_loss,
-              val_acc, val_sparse_top_k_categorical_accuracy, val_loss,
+    saveStats(train_acc, train_top_k_categorical_accuracy, train_loss,
+              val_acc, val_top_k_categorical_accuracy, val_loss,
               test_acc, test_top5_acc, test_loss, params)
 
     # save model

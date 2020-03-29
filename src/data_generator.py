@@ -1,5 +1,6 @@
 import numpy as np
 import keras
+from keras.utils import to_categorical
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -107,10 +108,13 @@ def split_data(X, Y, batch_size):
     return d, steps_per_epoch
 
 
-def gen(d, batch_size, dtype, dim, n_classes):
+def gen(d, batch_size, dtype, dim, n_classes, loss):
     while True:
         X = np.empty((batch_size, dim), dtype=dtype)
-        y = np.empty((batch_size), dtype=dtype)
+        if loss == 'categorical_crossentropy':
+            y = np.empty((batch_size, n_classes), dtype=dtype)
+        else:
+            y = np.empty((batch_size), dtype=dtype)
 
         # labels = np.random.choice(classes, batch_size, replace=False)
         labels = np.random.randint(n_classes, size=batch_size)  # discrete uniform
@@ -126,6 +130,8 @@ def gen(d, batch_size, dtype, dim, n_classes):
                 X[i,] = d[label][x_ind]
 
             # Store class
+            if loss == 'categorical_crossentropy':
+                label = to_categorical(label, num_classes=n_classes)
             y[i] = label
 
         yield X, y
