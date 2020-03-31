@@ -75,12 +75,15 @@ class Correlation():
         plt.suptitle('Correlation Matrix of Predictions', fontsize=20)
         plt.ylabel('True label', fontsize=12)
         plt.xlabel('Predicted label', fontsize=12)
+        # show x axis label at top
         dashboard.xaxis.set_label_position('top')
+        # show ticks both bottom and top
+        plt.tick_params(axis='both', which='major',  labelbottom=True, bottom=True, top=True, labeltop=True)
         plt.grid()
 
         if self.save:
-            path = self.output_path + "/{0}confusion_mat.png".format(self.name_prefix)
-            plt.savefig(path)
+            path = self.output_path + "/{0}confusion_mat.pdf".format(self.name_prefix)
+            plt.savefig(path, dpi=600, format='pdf')
         else:
             plt.show()
 
@@ -89,13 +92,17 @@ class Correlation():
     def _make_hierachy_graph(self):
         plt.figure(figsize=(20, 14))
         # build histogram
-        Y = hierarchy.distance.pdist(self.df.values, metric='euclidean')
-        Z = hierarchy.linkage(Y, method='average')
-        ax = hierarchy.dendrogram(Z, show_contracted=True)
+        # Y = hierarchy.distance.pdist(self.df.values, metric='euclidean')
+        try:
+            Z = hierarchy.linkage(self.df.corr(), method='ward', optimal_ordering=True)
+        except ValueError as e:
+            print("[WARNING] can not calculate corr of confusion matrix. That is bug if it is in production.")
+            Z = hierarchy.linkage(self.df.values, method='ward', optimal_ordering=True)
+        ax = hierarchy.dendrogram(Z, leaf_rotation=0, leaf_font_size=12, color_threshold=1.5)
 
         if self.save:
-            path = self.output_path + "/{0}hierarchy_graph.png".format(self.name_prefix)
-            plt.savefig(path)
+            path = self.output_path + "/{0}hierarchy_graph.pdf".format(self.name_prefix)
+            plt.savefig(path, dpi=600, format='pdf')
         else:
             plt.show()
 
