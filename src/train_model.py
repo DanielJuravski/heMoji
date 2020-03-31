@@ -14,6 +14,7 @@ from lib.sentence_tokenizer import SentenceTokenizer
 from lib.model_def import hemoji_architecture
 from data_generator import DataGenerator, split_data, gen
 from vision.correlation import Correlation
+from vision.get_emojis_vectors import get_softmax_weights, export_weights
 
 
 DATA_FILE_PATH = '/home/daniel/heMoji/data/data_3G_data01_mini.pkl'
@@ -392,6 +393,11 @@ def saveArtifacts(model, h, test_acc, test_loss, params, test_top5_acc):
     # serialize weights to HDF5
     model.save_weights(params["logs_dir"] + "model.h5")
     print("Saved model to disk")
+
+    # extract last layer (softmax) vectors
+    print("Extracting last layer (softmax) vectors")
+    W = get_softmax_weights(model)
+    export_weights(W, params["logs_dir"], e2l, l2e)
 
 
 if __name__ == '__main__':

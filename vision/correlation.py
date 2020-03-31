@@ -73,8 +73,9 @@ class Correlation():
         # ax.set_yticklabels(emojis_ticks)
 
         plt.suptitle('Correlation Matrix of Predictions', fontsize=20)
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
+        plt.ylabel('True label', fontsize=12)
+        plt.xlabel('Predicted label', fontsize=12)
+        dashboard.xaxis.set_label_position('top')
         plt.grid()
 
         if self.save:
