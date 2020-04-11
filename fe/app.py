@@ -30,6 +30,10 @@ def load_my_vocab():
 
 @st.cache(allow_output_mutation=True)
 def load_my_model():
+    # do not load the model to GPU
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
     model = load_model(conf['model'], custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
     model._make_predict_function()
     model.summary()  # included to make it visible when model is reloaded
@@ -83,10 +87,5 @@ if __name__ == '__main__':
 
 
         print("Done!\n")
-
-
-
-
-
 
 
