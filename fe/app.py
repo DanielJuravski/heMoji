@@ -62,7 +62,6 @@ if __name__ == '__main__':
     sentence = st.text_input('Input your sentence here:')
     if sentence:
         st.write(sentence)
-        print (sentence)
 
         u_line = [sentence]
         tokens, infos, stats = sentok.tokenize_sentences(u_line)
@@ -77,18 +76,13 @@ if __name__ == '__main__':
         e_top_labels = e_labels_reverse[:TOP_E]  # top
         e_top_labels_scores = e_labels_reverse_scores[:TOP_E]  # top
 
-        with open('../data/out.txt', 'w') as f:
-            for e, score in zip(e_top_labels, e_top_labels_scores):
-                e_unicode = l2e[e]
-                line = e_unicode.encode('utf-8') + '\t' + '(' + str(score) + ')'
-                f.writelines(line)
-                f.writelines('\n')
-                st.write(e_unicode)
+        for e, score in zip(e_top_labels, e_top_labels_scores):
+            e_unicode = l2e[e]
+            line = e_unicode.encode('utf-8') + '\t' + '(' + str(score) + ')'
+            st.write(e_unicode)
 
-                pass
 
         print("Done!\n")
-
 
 
 
