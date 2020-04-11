@@ -2,8 +2,8 @@ import sys
 import pickle
 from collections import defaultdict
 
-LARGE_DATA = '/home/daniel/heMoji/data/data.pkl'
-SMALL_DATA = '/home/daniel/heMoji/data/data_mini.pkl'
+LARGE_DATA = '/home/daniel/heMoji/data/data_3G_data01.pkl'
+SMALL_DATA = '/home/daniel/heMoji/data/data_3G_data01_mini.pkl'
 N = 5
 
 
