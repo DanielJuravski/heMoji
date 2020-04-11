@@ -7,9 +7,9 @@ from keras import backend as K
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.attlayer import AttentionWeightedAverage
 
-MODEL_PATH = '/home/daniel/heMoji/data/10K_model.hdf5'
-VOCAB_FILE = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
 
+with open('config.json') as f:
+    conf = json.load(f, encoding='utf-8')
 maxlen=80
 data = "data01"
 e2l_str = data + "e2l"
@@ -21,7 +21,7 @@ TOP_E = len(e2l)
 
 @st.cache(allow_output_mutation=True)
 def load_my_vocab():
-    with open(VOCAB_FILE, 'r') as f:
+    with open(conf['vocab'], 'r') as f:
         vocab = json.load(f)
         print("Vocab size is: {0}".format(len(vocab)))
 
@@ -30,7 +30,7 @@ def load_my_vocab():
 
 @st.cache(allow_output_mutation=True)
 def load_my_model():
-    model = load_model(MODEL_PATH, custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
+    model = load_model(conf['model'], custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
     model._make_predict_function()
     model.summary()  # included to make it visible when model is reloaded
     session = K.get_session()
@@ -40,7 +40,7 @@ def load_my_model():
 
 @st.cache(allow_output_mutation=False)
 def load_sentok(vocab):
-    with open(VOCAB_FILE, 'r') as f:
+    with open(conf['vocab'], 'r') as f:
         vocab1 = json.load(f)
     sentok = SentenceTokenizer(vocab1, maxlen, prod=True, wanted_emojis=e2l, uint=32)
 
