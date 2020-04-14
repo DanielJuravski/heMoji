@@ -11,6 +11,7 @@ sys.setdefaultencoding('utf-8')
 
 from lib.sentence_tokenizer import SentenceTokenizer
 from lib.attlayer import AttentionWeightedAverage
+import SessionState
 
 
 with open('config.json') as f:
@@ -90,14 +91,71 @@ def loaders():
     return model, session, sentok
 
 
+def use_example_sentence():
+    s1 = 'כשאמא לא פה ואחי זה שצריך להכין אוכל התוצאה היא אסון תברואתי'
+    s2 = 'הצלחתי להשיג כרטיסים להופעה של עומר אדם!!!'
+    s3 = 'שמעתי את השיר החדש של עידן רייכל והוא מעולה!'
+    s4 = 'משפחה יקרה שלי'
+    s5 = 'וואלה זה היה סטייק  טוב'
+    s6 = 'וואלה זה היה סטייק לא ממש טוב'
+    s7 = 'אני עוד יכול להתרגל לזה לעבוד כל השבוע מהבית :D'
+
+    b1 = st.button(s1)
+    b2 = st.button(s2)
+    b3 = st.button(s3)
+    b4 = st.button(s4)
+    b5 = st.button(s5)
+    b6 = st.button(s6)
+    b7 = st.button(s7)
+
+    if b1:
+        return s1
+    elif b2:
+        return s2
+    elif b3:
+        return s3
+    elif b4:
+        return s4
+    elif b5:
+        return s5
+    elif b6:
+        return s6
+    elif b7:
+        return s7
+    else:
+        return None
+
+
+def get_input_sentence():
+    # user input sentence
+    sentence_widget = st.empty()
+    sentence_str = sentence_widget.text_input('Insert Hebrew phrase:')
+
+    # example sentences
+    st.write("<p style='font-size:80%;'>Or click on any example sentence below:</p>", unsafe_allow_html=True)
+    example_sentence = use_example_sentence()
+
+    if example_sentence is not None:
+        sentence_str = example_sentence
+
+    state = SessionState.get(key=0)
+
+    if example_sentence is not None:
+        state.key += 1
+        sentence_str = sentence_widget.text_input('Some text', value=example_sentence, key=state.key)
+
+    return sentence_str
+
+
 def page_home():
+    st.balloons()
     st.title('***heMoji*** Predictor')
     st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
 
     st.sidebar.title("Mode")
     mode = st.sidebar.radio(label="", options=["Basic", "Advanced"])
 
-    sentence = st.text_input('Insert Hebrew phrase:')
+    sentence = get_input_sentence()
 
     return mode, sentence
 
@@ -150,7 +208,6 @@ if __name__ == '__main__':
             if mode == "Advanced":
                 st.write("Input tokens:")
                 st.write(tokens)
-
             result = predict_input_sentence(session, tokens)
             result_table = style_result(result)
 
