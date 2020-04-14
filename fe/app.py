@@ -36,7 +36,7 @@ def load_my_vocab():
 
 
 @st.cache(allow_output_mutation=True)
-def load_my_model():
+def load_heMoji_model():
     # do not load the model to GPU
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -82,43 +82,68 @@ def edit_probs(result):
     return result
 
 
-if __name__ == '__main__':
-    """
-    some pretty UI that loads the model and predicts emoji based on text
-    """
+def loaders():
     vocab = load_my_vocab()
     sentok = SentenceTokenizer(vocab, maxlen, prod=True, wanted_emojis=e2l, uint=32)
-    model, session = load_my_model()
+    model, session = load_heMoji_model()
+
+    return model, session, sentok
+
+
+def page_home():
+    st.title('***heMoji*** Predictor')
+    st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
 
     st.sidebar.title("Mode")
     mode = st.sidebar.radio(label="", options=["Basic", "Advanced"])
 
-    st.title('***heMoji*** Predictor')
-    st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
-
     sentence = st.text_input('Insert Hebrew phrase:')
-    if sentence:
+
+    return mode, sentence
+
+
+def predict_input_sentence():
+    K.set_session(session)
+    e_scores = model.predict(tokens)[0]  # there is only 1 macro array since it is the return of the softmax layer
+    e_labels = np.argsort(e_scores)  # sort: min --> max
+    e_labels_reverse = e_labels[::-1]  # reverse max --> min
+    e_labels_reverse_scores = [e_scores[i] for i in e_labels_reverse]  # prob of every label
+    e_top_labels = e_labels_reverse[:TOP_E]  # top
+    e_top = [l2e[e] for e in e_top_labels]
+    e_top_labels_scores = e_labels_reverse_scores[:TOP_E]  # top
+
+    result = pd.DataFrame({'emoji': e_top, 'prob': e_top_labels_scores}).T
+
+    return result
+
+
+def style_result(result):
+    result = result.style.apply(design_cells, axis=1)
+    result = edit_probs(result)
+
+    return result
+
+
+if __name__ == '__main__':
+    """
+    some pretty UI that loads the model and predicts emoji based on text
+    """
+    model, session, sentok = loaders()
+
+    mode, input_sentence = page_home()
+
+    if input_sentence:
         # encode sentence to tokens
-        u_line = [sentence]
+        u_line = [input_sentence]
         tokens, infos, stats = sentok.tokenize_sentences(u_line)
         if mode == "Advanced":
             st.write("Input tokens:")
             st.write(tokens)
 
-        K.set_session(session)
-        e_scores = model.predict(tokens)[0]  # there is only 1 macro array since it is the return of the softmax layer
-        e_labels = np.argsort(e_scores)  # sort: min --> max
-        e_labels_reverse = e_labels[::-1]  # reverse max --> min
-        e_labels_reverse_scores = [e_scores[i] for i in e_labels_reverse]  # prob of every label
-        e_top_labels = e_labels_reverse[:TOP_E]  # top
-        e_top = [l2e[e] for e in e_top_labels]
-        e_top_labels_scores = e_labels_reverse_scores[:TOP_E]  # top
+        result = predict_input_sentence()
+        result_table = style_result(result)
 
-        result = pd.DataFrame({'emoji': e_top, 'prob': e_top_labels_scores}).T
-        result = result.style.apply(design_cells, axis=1)
-        result = edit_probs(result)
-        st.table(result)
+        st.table(result_table)
 
         print("Predicted!\n")
-
 
