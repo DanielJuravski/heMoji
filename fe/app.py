@@ -5,6 +5,8 @@ import numpy as np
 from keras import backend as K
 import matplotlib.pyplot as plt
 import pandas as pd
+from os.path import expanduser
+from time import gmtime, strftime
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -25,6 +27,8 @@ exec("from src.emoji2label import %s as l2e") % l2e_str
 l2e = l2e  # let's have the 'Unresolved' error once and last here
 e2l = e2l  # let's have the 'Unresolved' error once and last here
 TOP_E = 5  # len(e2l)
+HOME = expanduser("~")
+LOGGER_PATH = HOME + '/emoji_predictor.log'
 
 
 @st.cache(allow_output_mutation=True)
@@ -92,13 +96,15 @@ def loaders():
 
 
 def use_example_sentence():
-    s1 = 'כשאמא לא פה ואחי זה שצריך להכין אוכל התוצאה היא אסון תברואתי'
-    s2 = 'הצלחתי להשיג כרטיסים להופעה של עומר אדם!!!'
-    s3 = 'שמעתי את השיר החדש של עידן רייכל והוא מעולה!'
-    s4 = 'משפחה יקרה שלי'
-    s5 = 'וואלה זה היה סטייק  טוב'
-    s6 = 'וואלה זה היה סטייק לא ממש טוב'
-    s7 = 'אני עוד יכול להתרגל לזה לעבוד כל השבוע מהבית :D'
+    with open('examples.json') as f:
+        conf = json.load(f, encoding='utf-8')
+        s1 = conf['s1']
+        s2 = conf['s2']
+        s3 = conf['s3']
+        s4 = conf['s4']
+        s5 = conf['s5']
+        s6 = conf['s6']
+        s7 = conf['s7']
 
     b1 = st.button(s1)
     b2 = st.button(s2)
@@ -129,26 +135,20 @@ def use_example_sentence():
 def get_input_sentence():
     # user input sentence
     sentence_widget = st.empty()
-    sentence_str = sentence_widget.text_input('Insert Hebrew phrase:')
+    sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', key=0)
 
     # example sentences
     st.write("<p style='font-size:80%;'>Or click on any example sentence below:</p>", unsafe_allow_html=True)
     example_sentence = use_example_sentence()
-
+    # state = SessionState.get(key=0)
     if example_sentence is not None:
-        sentence_str = example_sentence
-
-    state = SessionState.get(key=0)
-
-    if example_sentence is not None:
-        state.key += 1
-        sentence_str = sentence_widget.text_input('Some text', value=example_sentence, key=state.key)
+        # state.key += 1
+        sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', value=example_sentence, key=0)
 
     return sentence_str
 
 
 def page_home():
-    st.balloons()
     st.title('***heMoji*** Predictor')
     st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
 
@@ -161,18 +161,21 @@ def page_home():
 
 
 def predict_input_sentence(session, tokens):
+    st.balloons()
     K.set_session(session)
     e_scores = model.predict(tokens)[0]  # there is only 1 macro array since it is the return of the softmax layer
     e_labels = np.argsort(e_scores)  # sort: min --> max
     e_labels_reverse = e_labels[::-1]  # reverse max --> min
     e_labels_reverse_scores = [e_scores[i] for i in e_labels_reverse]  # prob of every label
+    emojis = [l2e[e] for e in e_labels_reverse]
     e_top_labels = e_labels_reverse[:TOP_E]  # top
-    e_top = [l2e[e] for e in e_top_labels]
+    emojis_top = [l2e[e] for e in e_top_labels]
     e_top_labels_scores = e_labels_reverse_scores[:TOP_E]  # top
 
-    result = pd.DataFrame({'emoji': e_top, 'prob': e_top_labels_scores}).T
+    result = pd.DataFrame({'emoji': emojis_top, 'prob': e_top_labels_scores}).T
+    log_result = pd.DataFrame({'emoji': emojis, 'emoji_label': e_labels_reverse, 'prob': e_labels_reverse_scores})
 
-    return result
+    return result, log_result
 
 
 def style_result(result):
@@ -194,6 +197,19 @@ def encode_input_sentence(input_sentence):
     return tokens
 
 
+def logger(input_sentence, tokens, log_result):
+    with open(LOGGER_PATH, 'a+') as f:
+        t = strftime("%Y_%m_%d-%H:%M:%S", gmtime())
+        info = {'time': t,
+                'input': input_sentence,
+                'input_tokens': tokens.tolist(),
+                'prediction': {'emoji': log_result['emoji'].tolist(),
+                               'emoji_label': log_result['emoji_label'].tolist(),
+                               'emoji_prob': log_result['prob'].tolist()}}
+        f.writelines(json.dumps(info))
+        f.writelines("\n")
+
+
 if __name__ == '__main__':
     """
     some pretty UI that loads the model and predicts emoji based on text
@@ -208,10 +224,13 @@ if __name__ == '__main__':
             if mode == "Advanced":
                 st.write("Input tokens:")
                 st.write(tokens)
-            result = predict_input_sentence(session, tokens)
+            result, log_result = predict_input_sentence(session, tokens)
             result_table = style_result(result)
 
+            # display emoji predictions
             st.table(result_table)
 
+            # log session
+            logger(input_sentence, tokens, log_result)
             print("Predicted!\n")
 
