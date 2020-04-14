@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from os.path import expanduser
 from time import gmtime, strftime
+from PIL import Image
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -148,12 +149,19 @@ def get_input_sentence():
     return sentence_str
 
 
-def page_home():
+def home_page():
+    st.balloons()
+
     st.title('***heMoji*** Predictor')
     st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
 
     st.sidebar.title("Mode")
     mode = st.sidebar.radio(label="", options=["Basic", "Advanced"])
+    st.sidebar.markdown("")
+    st.sidebar.markdown("")
+    st.sidebar.markdown("")
+    image = Image.open('biu_logo_transparent.png')
+    st.sidebar.image(image, width=100)
 
     sentence = get_input_sentence()
 
@@ -161,7 +169,6 @@ def page_home():
 
 
 def predict_input_sentence(session, tokens):
-    st.balloons()
     K.set_session(session)
     e_scores = model.predict(tokens)[0]  # there is only 1 macro array since it is the return of the softmax layer
     e_labels = np.argsort(e_scores)  # sort: min --> max
@@ -216,7 +223,7 @@ if __name__ == '__main__':
     """
     model, session, sentok = loaders()
 
-    mode, input_sentence = page_home()
+    mode, input_sentence = home_page()
 
     if input_sentence:
         tokens = encode_input_sentence(input_sentence)
