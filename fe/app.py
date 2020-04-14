@@ -102,7 +102,7 @@ def page_home():
     return mode, sentence
 
 
-def predict_input_sentence():
+def predict_input_sentence(session, tokens):
     K.set_session(session)
     e_scores = model.predict(tokens)[0]  # there is only 1 macro array since it is the return of the softmax layer
     e_labels = np.argsort(e_scores)  # sort: min --> max
@@ -124,6 +124,18 @@ def style_result(result):
     return result
 
 
+def encode_input_sentence(input_sentence):
+    # encode sentence to tokens
+    u_line = [input_sentence]
+    try:
+        tokens, infos, stats = sentok.tokenize_sentences(u_line)
+    except AssertionError as e:
+        st.error("I think you've entered invalid sentence, please try another sentence.")
+        tokens = None
+
+    return tokens
+
+
 if __name__ == '__main__':
     """
     some pretty UI that loads the model and predicts emoji based on text
@@ -133,17 +145,16 @@ if __name__ == '__main__':
     mode, input_sentence = page_home()
 
     if input_sentence:
-        # encode sentence to tokens
-        u_line = [input_sentence]
-        tokens, infos, stats = sentok.tokenize_sentences(u_line)
-        if mode == "Advanced":
-            st.write("Input tokens:")
-            st.write(tokens)
+        tokens = encode_input_sentence(input_sentence)
+        if tokens is not None:
+            if mode == "Advanced":
+                st.write("Input tokens:")
+                st.write(tokens)
 
-        result = predict_input_sentence()
-        result_table = style_result(result)
+            result = predict_input_sentence(session, tokens)
+            result_table = style_result(result)
 
-        st.table(result_table)
+            st.table(result_table)
 
-        print("Predicted!\n")
+            print("Predicted!\n")
 
