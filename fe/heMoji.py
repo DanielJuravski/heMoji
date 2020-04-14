@@ -239,5 +239,4 @@ if __name__ == '__main__':
 
             # log session
             logger(input_sentence, tokens, log_result)
-            print("Predicted!\n")
 
