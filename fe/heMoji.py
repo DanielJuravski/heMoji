@@ -147,13 +147,7 @@ def get_input_sentence():
     # user input sentence
     sentence_widget = st.empty()
     # set sentence_widget location to the right
-    st.markdown("""
-        <style>
-            input {
-                direction: RTL;
-            }
-        </style>""", unsafe_allow_html=True)
-
+    st.markdown("""<style>input {direction: RTL;}</style>""", unsafe_allow_html=True)
     sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', key=0)
 
     # example sentences
@@ -162,7 +156,8 @@ def get_input_sentence():
     # state = SessionState.get(key=0)
     if example_sentence is not None:
         # state.key += 1
-        sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', value=example_sentence, key=0)
+        sentence_str = example_sentence
+        # sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', value=example_sentence, key=0)
 
     return sentence_str
 
@@ -170,7 +165,7 @@ def get_input_sentence():
 def home_page():
     st.balloons()
     st.title('***heMoji*** Predictor')
-    st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
+    st.subheader('***heMoji*** will try to detect the sentiment, emotion and sarcasm of your Hebrew sentence and predict the correspond emoji for it')
 
     st.sidebar.title("Mode")
     mode = st.sidebar.radio(label="", options=["Basic", "Advanced"])
