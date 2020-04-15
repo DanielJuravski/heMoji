@@ -97,6 +97,16 @@ def loaders():
 
 
 def use_example_sentence():
+    # set buttons location to the right
+    st.markdown("""
+            <style>
+            .stButton>button {
+                unicode-bidi:bidi-override;
+                direction: RTL;
+                display: block;
+                margin-left: auto;}
+            </style>
+                """, unsafe_allow_html=True)
     with open('examples.json') as f:
         conf = json.load(f, encoding='utf-8')
         s1 = conf['s1']
@@ -136,6 +146,14 @@ def use_example_sentence():
 def get_input_sentence():
     # user input sentence
     sentence_widget = st.empty()
+    # set sentence_widget location to the right
+    st.markdown("""
+        <style>
+            input {
+                direction: RTL;
+            }
+        </style>""", unsafe_allow_html=True)
+
     sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', key=0)
 
     # example sentences
@@ -151,7 +169,6 @@ def get_input_sentence():
 
 def home_page():
     st.balloons()
-
     st.title('***heMoji*** Predictor')
     st.subheader('***heMoji*** will try to understand the sentiment of your Hebrew sentence and predict the correspond emoji for it')
 
@@ -235,6 +252,7 @@ if __name__ == '__main__':
             result_table = style_result(result)
 
             # display emoji predictions
+            st.write("<p style='font-size:80%;'>Predicted emojis:</p>", unsafe_allow_html=True)
             st.table(result_table)
 
             # log session
