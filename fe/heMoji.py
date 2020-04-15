@@ -177,8 +177,10 @@ def home_page():
     st.sidebar.markdown("")
     st.sidebar.markdown("")
     st.sidebar.markdown("")
+    st.sidebar.markdown("")
+    st.sidebar.markdown("")
     image = Image.open('biu_logo_transparent.png')
-    st.sidebar.image(image, width=100)
+    st.sidebar.image(image, width=150)
 
     sentence = get_input_sentence()
 
