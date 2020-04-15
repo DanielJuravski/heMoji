@@ -8,6 +8,7 @@ import pandas as pd
 from os.path import expanduser
 from time import gmtime, strftime
 from PIL import Image
+import string
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -143,12 +144,26 @@ def use_example_sentence():
         return None
 
 
+def sentence_contains_en_chars(sentence_str):
+    contains = False
+    for i in sentence_str:
+        if i in string.lowercase:
+            contains = True
+            break
+        if i in string.uppercase and i != "D":
+            contains = True
+            break
+
+    return contains
+
+
 def get_input_sentence():
     # user input sentence
     sentence_widget = st.empty()
     # set sentence_widget location to the right
     st.markdown("""<style>input {direction: RTL;}</style>""", unsafe_allow_html=True)
     sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', key=0)
+    sentence_widget_warning = st.empty()
 
     # example sentences
     st.write("<p style='font-size:80%;'>Or click on any example sentence below:</p>", unsafe_allow_html=True)
@@ -158,6 +173,9 @@ def get_input_sentence():
         # state.key += 1
         sentence_str = example_sentence
         # sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', value=example_sentence, key=0)
+
+    if sentence_contains_en_chars(sentence_str):
+        sentence_widget_warning.warning("Your sentence contains non Hebrew characters, which the predictor doesn't support")
 
     return sentence_str
 
