@@ -260,6 +260,7 @@ if __name__ == '__main__':
     if input_sentence:
         tokens = encode_input_sentence(input_sentence)
         if tokens is not None:
+            # display sentence tokens
             if mode == "Advanced":
                 st.write("Input tokens:")
                 st.write(tokens)
@@ -272,4 +273,27 @@ if __name__ == '__main__':
 
             # log session
             logger(input_sentence, tokens, log_result)
+
+    # take care transcription json input file
+    if mode == "Advanced":
+        uploaded_file = st.file_uploader("Choose a transcription json file")
+        if uploaded_file is not None:
+            trans = json.load(uploaded_file)
+            for turn in trans["dialog_turns_list"]:
+                if turn["speaker"] == "Client":
+                    for mini_turn in turn["mini_dialog_turn_list"]:
+                        if mini_turn["speaker"] == "Client":
+                            st.markdown("------------")
+                            input_sentence = mini_turn["plainText"]
+                            st.write("<p style='font-size:80%;'>Input sentence:</p>", unsafe_allow_html=True)
+                            st.write(input_sentence)
+                            tokens = encode_input_sentence(input_sentence)
+                            if tokens is not None:
+                                result, log_result = predict_input_sentence(session, tokens)
+                                result_table = style_result(result)
+                                # display emoji predictions
+                                st.write("<p style='font-size:80%;'>Predicted emojis:</p>", unsafe_allow_html=True)
+                                st.table(result_table)
+
+
 
