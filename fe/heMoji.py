@@ -38,6 +38,8 @@ class EmojiUI:
         self.model = model
         self.session = session
         self.sentok = sentok
+        # current session tokens
+        self.tokens = None
 
     def home_page(self):
         # tittles
@@ -142,9 +144,9 @@ class EmojiUI:
             log_sentence = False
 
         if sentence_str:
-            tokens = self.encode_input_sentence(sentence_str)
-            if tokens is not None:
-                result, log_result = self.evaluate_input_sentence(tokens)
+            self.tokens = self.encode_input_sentence(sentence_str)
+            if self.tokens is not None:
+                result, log_result = self.evaluate_input_sentence(self.session, self.tokens)
                 result_table = style_result(result)
 
                 # display emoji predictions
@@ -152,7 +154,7 @@ class EmojiUI:
                 self.w_result_table.table(result_table)
 
                 if log_sentence:
-                    logger(sentence_str, tokens, log_result)
+                    logger(sentence_str, self.tokens, log_result)
 
     def encode_input_sentence(self, input_sentence):
         # encode sentence to tokens
@@ -165,8 +167,8 @@ class EmojiUI:
 
         return tokens
 
-    def evaluate_input_sentence(self, tokens):
-        K.set_session(self.session)
+    def evaluate_input_sentence(self, session, tokens):
+        K.set_session(session)
         e_scores = self.model.predict(tokens)[0]  # there is only 1 macro array since it is the return of the softmax layer
         e_labels = np.argsort(e_scores)  # sort: min --> max
         e_labels_reverse = e_labels[::-1]  # reverse max --> min
