@@ -165,15 +165,6 @@ def get_input_sentence():
     sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', key=0)
     sentence_widget_warning = st.empty()
 
-    # example sentences
-    st.write("<p style='font-size:80%;'>Or click on any example sentence below:</p>", unsafe_allow_html=True)
-    example_sentence = use_example_sentence()
-    # state = SessionState.get(key=0)
-    if example_sentence is not None:
-        # state.key += 1
-        sentence_str = example_sentence
-        # sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', value=example_sentence, key=0)
-
     if sentence_contains_en_chars(sentence_str):
         sentence_widget_warning.warning("Your sentence contains non Hebrew characters, which the predictor doesn't support")
 
@@ -197,7 +188,10 @@ def home_page():
 
     sentence = get_input_sentence()
 
-    return mode, sentence
+    result_table_text_w = st.empty()
+    result_table_w = st.empty()
+
+    return mode, sentence, result_table_text_w, result_table_w
 
 
 def predict_input_sentence(session, tokens):
@@ -255,7 +249,7 @@ if __name__ == '__main__':
     """
     model, session, sentok = loaders()
 
-    mode, input_sentence = home_page()
+    mode, input_sentence, result_table_text_w, result_table_w = home_page()
 
     if input_sentence:
         tokens = encode_input_sentence(input_sentence)
@@ -268,11 +262,27 @@ if __name__ == '__main__':
             result_table = style_result(result)
 
             # display emoji predictions
-            st.write("<p style='font-size:80%;'>Predicted emojis:</p>", unsafe_allow_html=True)
-            st.table(result_table)
+            result_table_text_w.markdown("<p style='font-size:80%;'>Predicted emojis:</p>", unsafe_allow_html=True)
+            result_table_w.table(result_table)
 
             # log session
             logger(input_sentence, tokens, log_result)
+
+    # example sentences
+    st.write("<p style='font-size:80%;'>Or click on any example sentence below:</p>", unsafe_allow_html=True)
+    example_sentence = use_example_sentence()
+    # state = SessionState.get(key=0)
+    if example_sentence is not None:
+        # state.key += 1
+        sentence_str = example_sentence
+        tokens = encode_input_sentence(sentence_str)
+        # sentence_str = sentence_widget.text_input('Insert Hebrew sentence:', value=example_sentence, key=0)
+        result, log_result = predict_input_sentence(session, tokens)
+        result_table = style_result(result)
+
+        # display emoji predictions
+        result_table_text_w.markdown("<p style='font-size:80%;'>Predicted emojis:</p>", unsafe_allow_html=True)
+        result_table_w.table(result_table)
 
     # take care transcription json input file
     if mode == "Advanced":
