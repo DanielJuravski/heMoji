@@ -150,7 +150,7 @@ def sentence_contains_en_chars(sentence_str):
         if i in string.lowercase:
             contains = True
             break
-        if i in string.uppercase and i != "D":
+        if i in string.uppercase:
             contains = True
             break
 
