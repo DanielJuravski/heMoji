@@ -81,9 +81,9 @@ def deepmoji_emojis(maxlen, weight_path, return_attention=False):
     return model
 
 
-def deepmoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
+def hemoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
                       embed_dropout_rate=0.25, final_dropout_rate=0.5,
-                      embed_l2=1E-6):
+                      embed_l2=1E-6, nb_tokens=NB_TOKENS):
     """ Loads the pretrained DeepMoji model for finetuning/transfer learning.
         Does not load weights for the softmax layer.
 
@@ -110,10 +110,10 @@ def deepmoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
         Model with the given parameters.
     """
 
-    model = deepmoji_architecture(nb_classes=nb_classes,
-                                  nb_tokens=NB_TOKENS + extend_embedding,
-                                  maxlen=maxlen, embed_dropout_rate=embed_dropout_rate,
-                                  final_dropout_rate=final_dropout_rate, embed_l2=embed_l2)
+    model = hemoji_architecture(nb_classes=nb_classes,
+                                nb_tokens=nb_tokens + extend_embedding,
+                                maxlen=maxlen, embed_dropout_rate=embed_dropout_rate,
+                                final_dropout_rate=final_dropout_rate, embed_l2=embed_l2)
 
     if weight_path is not None:
         load_specific_weights(model, weight_path,
@@ -122,7 +122,7 @@ def deepmoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
     return model
 
 
-def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, embed_dropout_rate=0, final_dropout_rate=0, embed_l2=1E-6, return_attention=False, gpu="-1"):
+def hemoji_architecture(nb_classes, nb_tokens, maxlen, feature_output=False, embed_dropout_rate=0.0, final_dropout_rate=0.0, embed_l2=1E-6, return_attention=False, gpu="-1"):
     """
     Returns the DeepMoji architecture uninitialized and
     without using the pretrained model weights.

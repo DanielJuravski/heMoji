@@ -231,6 +231,8 @@ class WordGenerator():
                 self.stats['valid'] += 1
                 orig_line = line
                 yield words, info, orig_line
+            else:
+                print("[ERROR] invalid sentence: {0}".format(line.encode('utf-8')))
 
             self.stats['total'] += 1
 
