@@ -1,7 +1,10 @@
 from __future__ import print_function
 import json
 import sys
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
 
