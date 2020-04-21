@@ -83,7 +83,7 @@ def deepmoji_emojis(maxlen, weight_path, return_attention=False):
 
 def hemoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
                       embed_dropout_rate=0.25, final_dropout_rate=0.5,
-                      embed_l2=1E-6, nb_tokens=NB_TOKENS):
+                      embed_l2=1E-6, nb_tokens=NB_TOKENS, gpu="-1"):
     """ Loads the pretrained DeepMoji model for finetuning/transfer learning.
         Does not load weights for the softmax layer.
 
@@ -113,7 +113,8 @@ def hemoji_transfer(nb_classes, maxlen, weight_path=None, extend_embedding=0,
     model = hemoji_architecture(nb_classes=nb_classes,
                                 nb_tokens=nb_tokens + extend_embedding,
                                 maxlen=maxlen, embed_dropout_rate=embed_dropout_rate,
-                                final_dropout_rate=final_dropout_rate, embed_l2=embed_l2)
+                                final_dropout_rate=final_dropout_rate, embed_l2=embed_l2,
+                                gpu=gpu)
 
     if weight_path is not None:
         load_specific_weights(model, weight_path,

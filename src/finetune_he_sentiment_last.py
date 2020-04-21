@@ -17,42 +17,62 @@ USE_BATCH_GENERATOR = False
 
 
 def get_args():
+    params = dict()
+
     if '--logs_dir' in sys.argv:
         option_i = sys.argv.index('--logs_dir')
         logs_dir = sys.argv[option_i + 1]
     else:
         logs_dir = LOGS_DIR
+    params['logs_dir'] = logs_dir
 
     if '--model' in sys.argv:
         option_i = sys.argv.index('--model')
         model_path = sys.argv[option_i + 1]
     else:
         model_path = PRETRAINED_PATH
+    params['model_path'] = model_path
 
     if '--vocab' in sys.argv:
         option_i = sys.argv.index('--vocab')
         vocab_path = sys.argv[option_i + 1]
     else:
         vocab_path = VOCAB_PATH
+    params['vocab_path'] = vocab_path
 
     if '--epochs' in sys.argv:
         option_i = sys.argv.index('--epochs')
         epochs = int(sys.argv[option_i + 1])
     else:
         epochs = EPOCHS
+    params['epochs'] = epochs
 
     if '--epoch_size' in sys.argv:
         option_i = sys.argv.index('--epoch_size')
         epoch_size = int(sys.argv[option_i + 1])
     else:
         epoch_size = EPOCH_SIZE
+    params['epoch_size'] = epoch_size
 
     if '--train_data_gen' in sys.argv:
         train_data_gen = True
     else:
         train_data_gen= USE_BATCH_GENERATOR
+    params['train_data_gen'] = train_data_gen
 
-    return logs_dir, model_path, vocab_path, epochs, epoch_size, train_data_gen
+    if '--gpu' in sys.argv:
+        option_i = sys.argv.index('--gpu')
+        gpu = sys.argv[option_i + 1]
+    else:
+        gpu = "-1"
+    params['gpu'] = gpu
+
+    print("params:")
+    for k, v in params.items():
+        print("{0}:\t{1}".format(k, v))
+    print()
+
+    return params
 
 
 def save_stats(model, test_acc, logs_dir):
@@ -87,8 +107,8 @@ def save_stats(model, test_acc, logs_dir):
         print("Test data acc: {0}\n".format(test_acc))
 
 
-def main(logs_dir, model_path, vocab_path, epochs, epoch_size, train_data_gen):
-    with open(vocab_path, 'r') as f:
+def main(params):
+    with open(params['vocab_path'], 'r') as f:
         vocab = json.load(f)
         nb_tokens = len(vocab)
 
@@ -96,12 +116,13 @@ def main(logs_dir, model_path, vocab_path, epochs, epoch_size, train_data_gen):
     data = load_benchmark(DATASET_PATH, vocab, vocab_uint=32)  # TODO: maybe the maxlen should be fixed to 80?
 
     # Set up model and finetune
-    model = hemoji_transfer(nb_classes, data['maxlen'], model_path, nb_tokens=nb_tokens)
+    model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
     model.summary()
     model, test_acc = finetune(model, data['texts'], data['labels'], nb_classes,
-                          data['batch_size'], method='last',
-                          epoch_size=epoch_size, nb_epochs=epochs, batch_generator=train_data_gen)
-    save_stats(model, test_acc, logs_dir)
+                               data['batch_size'], method='last',
+                               epoch_size=params['epoch_size'], nb_epochs=params['epochs'],
+                               batch_generator=params['train_data_gen'])
+    save_stats(model, test_acc, params['logs_dir'])
 
 
 if __name__ == '__main__':
@@ -116,5 +137,5 @@ if __name__ == '__main__':
     1) Freeze all layers except for the softmax layer.
     2) Train.
     """
-    logs_dir, model_path, vocab_path, epochs, epoch_size, train_data_gen = get_args()
-    main(logs_dir, model_path, vocab_path, epochs, epoch_size, train_data_gen)
+    params = get_args()
+    main(params)
