@@ -107,7 +107,7 @@ def calculate_batchsize_maxlen(texts):
     return batch_size, maxlen
 
 
-def finetuning_callbacks(checkpoint_path, patience, verbose):
+def finetuning_callbacks(checkpoint_path, patience, verbose, early_stop):
     """ Callbacks for model training.
 
     # Arguments:
@@ -119,12 +119,15 @@ def finetuning_callbacks(checkpoint_path, patience, verbose):
         Array with training callbacks that can be passed straight into
         model.fit() or similar.
     """
+    cb = []
     cb_verbose = (verbose >= 2)
-    checkpointer = ModelCheckpoint(monitor='val_loss', filepath=checkpoint_path,
-                                   save_best_only=True, verbose=1)
-    earlystop = EarlyStopping(monitor='val_loss', patience=patience,
-                              verbose=1)
-    return [checkpointer, earlystop]
+    cb_checkpointer = ModelCheckpoint(monitor='val_loss', filepath=checkpoint_path, save_best_only=True, verbose=1)
+    cb.append(cb_checkpointer)
+    if early_stop:
+        cb_earlystop = EarlyStopping(monitor='val_loss', patience=patience, verbose=1)
+        cb.append(cb_earlystop)
+
+    return cb
 
 
 def freeze_layers(model, unfrozen_types=[], unfrozen_keyword=None):
@@ -291,7 +294,7 @@ def sampling_generator(X_in, y_in, batch_size, epoch_size=25000,
 
 def finetune(model, texts, labels, nb_classes, batch_size, method,
              metric='acc', epoch_size=5000, nb_epochs=1000,
-             error_checking=True, verbose=1, batch_generator = True):
+             error_checking=True, verbose=1, batch_generator=True, early_stop=True):
     """ Compiles and finetunes the given model.
 
     # Arguments:
@@ -384,13 +387,15 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
                                 nb_epochs=nb_epochs,
                                 batch_size=batch_size,
                                 checkpoint_weight_path=checkpoint_path,
-                                evaluate=metric, verbose=verbose, batch_generator=batch_generator)
+                                evaluate=metric, verbose=verbose, batch_generator=batch_generator,
+                                early_stop=early_stop)
     return model, result
 
 
 def tune_trainable(model, nb_classes, train, val, test, epoch_size,
                    nb_epochs, batch_size, checkpoint_weight_path,
-                   patience=5, evaluate='acc', verbose=1, batch_generator=True):
+                   patience=5, evaluate='acc', verbose=1, batch_generator=True,
+                   early_stop=True):
     """ Finetunes the given model using the accuracy measure.
 
     # Arguments:
@@ -426,7 +431,7 @@ def tune_trainable(model, nb_classes, train, val, test, epoch_size,
         print("Trainable weights: {}".format(model.trainable_weights))
         print("Training..")
 
-    callbacks = finetuning_callbacks(checkpoint_weight_path, patience, verbose)
+    callbacks = finetuning_callbacks(checkpoint_weight_path, patience, verbose, early_stop)
 
     if batch_generator:
         # Use sample generator for fixed-size epoch

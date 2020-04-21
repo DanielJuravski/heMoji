@@ -70,6 +70,12 @@ def get_args():
         gpu = "-1"
     params['gpu'] = gpu
 
+    if '--early_stop' in sys.argv:
+        early_stop = True
+    else:
+        early_stop= False
+    params['early_stop'] = early_stop
+
     print("params:")
     for k, v in params.items():
         print("{0}:\t{1}".format(k, v))
@@ -124,7 +130,7 @@ def main(params):
     model, test_acc = finetune(model, data['texts'], data['labels'], nb_classes,
                                data['batch_size'], method='last',
                                epoch_size=params['epoch_size'], nb_epochs=params['epochs'],
-                               batch_generator=params['train_data_gen'])
+                               batch_generator=params['train_data_gen'], early_stop=params['early_stop'])
     save_stats(model, test_acc, params['logs_dir'])
 
 
