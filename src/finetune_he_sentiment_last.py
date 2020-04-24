@@ -29,6 +29,13 @@ def get_args():
         logs_dir = LOGS_DIR
     params['logs_dir'] = logs_dir
 
+    if '--data' in sys.argv:
+        option_i = sys.argv.index('--data')
+        data_path = sys.argv[option_i + 1]
+    else:
+        data_path = DATASET_PATH
+    params['data_path'] = data_path
+
     if '--model' in sys.argv:
         option_i = sys.argv.index('--model')
         model_path = sys.argv[option_i + 1]
