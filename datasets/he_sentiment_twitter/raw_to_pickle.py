@@ -1,6 +1,9 @@
 import pickle
 
-TYPE = "token"  # token/morph (morph unsupported)
+TYPE = 'morph'  # token/morph
+INPUT_TRAIN_FILE = TYPE + '_train.tsv'
+INPUT_TEST_FILE = TYPE + '_test.tsv'
+OUTPUT_FILE_NAME = TYPE + '_data.pkl'
 
 
 def load_tsv_data():
@@ -9,21 +12,20 @@ def load_tsv_data():
     train_Y = []
     test_Y = []
 
-    if TYPE == "token":
-        # load train data
-        with open('token_train.tsv', 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                x, y = line.strip('\n').split('\t')
-                train_X.append(x)
-                train_Y.append(int(y))
-        # load test data
-        with open('token_test.tsv', 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                x, y = line.strip('\n').split('\t')
-                test_X.append(x)
-                test_Y.append(int(y))
+    # load train data
+    with open('token_train.tsv', 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            x, y = line.strip('\n').split('\t')
+            train_X.append(x)
+            train_Y.append(int(y))
+    # load test data
+    with open('token_test.tsv', 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            x, y = line.strip('\n').split('\t')
+            test_X.append(x)
+            test_Y.append(int(y))
 
     return train_X, train_Y, test_X, test_Y
 
@@ -61,7 +63,7 @@ def generate_data_obj(train_X, train_Y, test_X, test_Y):
 
 
 def dump_data(data):
-    with open('data.pickle', 'w') as f:
+    with open(OUTPUT_FILE_NAME, 'w') as f:
         pickle.dump(data, f)
 
 
