@@ -129,7 +129,7 @@ def main(params):
         nb_tokens = len(vocab)
 
     # Load dataset.
-    data = load_benchmark(DATASET_PATH, vocab, vocab_uint=32)  # TODO: maybe the maxlen should be fixed to 80?
+    data = load_benchmark(params['data_path'], vocab, vocab_uint=32)  # TODO: maybe the maxlen should be fixed to 80?
 
     # Set up model and finetune
     model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
