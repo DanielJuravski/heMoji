@@ -13,14 +13,14 @@ def load_tsv_data():
     test_Y = []
 
     # load train data
-    with open('token_train.tsv', 'r') as f:
+    with open(INPUT_TRAIN_FILE, 'r') as f:
         lines = f.readlines()
         for line in lines:
             x, y = line.strip('\n').split('\t')
             train_X.append(x)
             train_Y.append(int(y))
     # load test data
-    with open('token_test.tsv', 'r') as f:
+    with open(INPUT_TEST_FILE, 'r') as f:
         lines = f.readlines()
         for line in lines:
             x, y = line.strip('\n').split('\t')
