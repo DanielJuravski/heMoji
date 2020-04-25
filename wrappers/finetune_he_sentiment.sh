@@ -17,6 +17,6 @@ echo "Logging to: $sd"
 # set new path of LOGS_DIR
 PARAMS=${PARAMS//${LOGS_DIR}/${sd}}
 
-python src/finetune_he_sentiment_last.py $PARAMS &> $sd/log.txt
+python src/finetune_he_sentiment.py $PARAMS &> $sd/log.txt
 
 echo "Done!"
