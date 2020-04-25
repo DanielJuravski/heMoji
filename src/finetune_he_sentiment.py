@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 
 from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
-from vision.get_emojis_vectors import get_softmax_weights, export_weights
 
 
 DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
@@ -18,9 +17,10 @@ DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
 PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
-EPOCHS = 3
+EPOCHS = 2
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
+TRANSFER = 'chain-thaw'
 
 nb_classes = 3
 TIMES = dict()
@@ -89,6 +89,14 @@ def get_args():
     else:
         early_stop= False
     params['early_stop'] = early_stop
+
+    if '--transfer' in sys.argv:
+        option_i = sys.argv.index('--transfer')
+        transfer = sys.argv[option_i + 1]
+    else:
+        print("[WARNING] using default --transfer value. You should pass it's value [last/chain-thaw]")
+        transfer = TRANSFER
+    params['transfer'] = transfer
 
     print("params:")
     for k, v in params.items():
@@ -165,7 +173,7 @@ def main(params):
     model.summary()
     printTime(key='train_start', msg="Start Training X,Y data")
     model, test_acc = finetune(model, data['texts'], data['labels'], nb_classes,
-                               data['batch_size'], method='last',
+                               data['batch_size'], method=params['transfer'],
                                epoch_size=params['epoch_size'], nb_epochs=params['epochs'],
                                batch_generator=params['train_data_gen'], early_stop=params['early_stop'])
     printTime(key='train_end', msg="End Training X,Y data")
@@ -179,11 +187,20 @@ if __name__ == '__main__':
     Trains the heMoji model on the he sentiment tweeter dataset, using the 'last'
     finetuning method and the accuracy metric.
 
-    The 'last' method does the following:
+    The 'last' method (transfer param) does the following:
     0) Load all weights except for the softmax layer. Do not add tokens to the
        vocabulary and do not extend the embedding layer.
     1) Freeze all layers except for the softmax layer.
     2) Train.
+
+    The 'chain-thaw' method (transfer param) does the following:
+    0) Load all weights except for the softmax layer. Extend the embedding layer if
+       necessary, initialising the new weights with random values.
+    1) Freeze every layer except the last (softmax) layer and train it.
+    2) Freeze every layer except the first layer and train it.
+    3) Freeze every layer except the second etc., until the second last layer.
+    4) Unfreeze all layers and train entire model.
     """
+
     params = get_args()
     main(params)

@@ -331,7 +331,7 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
     (X_val, y_val) = (texts[1], labels[1])
     (X_test, y_test) = (texts[2], labels[2])
 
-    checkpoint_path = '{}/deepmoji-checkpoint-{}.hdf5' \
+    checkpoint_path = '{}/heMoji-checkpoint-{}.hdf5' \
                       .format(WEIGHTS_DIR, str(uuid.uuid4()))
 
     # Check dimension of labels
@@ -377,7 +377,9 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
                             epoch_size=epoch_size,
                             nb_epochs=nb_epochs,
                             checkpoint_weight_path=checkpoint_path,
-                            evaluate=metric, verbose=verbose)
+                            evaluate=metric, verbose=verbose,
+                            batch_generator=batch_generator,
+                            early_stop=early_stop)
     else:
         result = tune_trainable(model, nb_classes=nb_classes,
                                 train=(X_train, y_train),
@@ -508,7 +510,8 @@ def chain_thaw(model, nb_classes, train, val, test, batch_size,
                loss, epoch_size, nb_epochs, checkpoint_weight_path,
                patience=5,
                initial_lr=0.001, next_lr=0.0001, seed=None,
-               verbose=1, evaluate='acc'):
+               verbose=1, evaluate='acc',
+               early_stop=True, batch_generator=True):
     """ Finetunes given model using chain-thaw and evaluates using accuracy.
 
     # Arguments:
@@ -546,17 +549,15 @@ def chain_thaw(model, nb_classes, train, val, test, batch_size,
     if verbose:
         print('Training..')
 
-    # Use sample generator for fixed-size epoch
-    train_gen = sampling_generator(X_train, y_train, batch_size,
-                                   upsample=False, seed=seed)
-    callbacks = finetuning_callbacks(checkpoint_weight_path, patience, verbose)
+
+    callbacks = finetuning_callbacks(checkpoint_weight_path, patience, verbose, early_stop)
 
     # Train using chain-thaw
-    train_by_chain_thaw(model=model, train_gen=train_gen,
+    train_by_chain_thaw(model=model, train_X=X_train, train_y=y_train,
                         val_data=(X_val, y_val), loss=loss, callbacks=callbacks,
                         epoch_size=epoch_size, nb_epochs=nb_epochs,
                         checkpoint_weight_path=checkpoint_weight_path,
-                        batch_size=batch_size, verbose=verbose)
+                        batch_size=batch_size, verbose=verbose, batch_generator=batch_generator, seed=seed)
 
     if evaluate == 'acc':
         return evaluate_using_acc(model, X_test, y_test, batch_size=batch_size)
@@ -565,9 +566,9 @@ def chain_thaw(model, nb_classes, train, val, test, batch_size,
                                           batch_size=batch_size)
 
 
-def train_by_chain_thaw(model, train_gen, val_data, loss, callbacks, epoch_size,
+def train_by_chain_thaw(model, train_X, train_y, val_data, loss, callbacks, epoch_size,
                         nb_epochs, checkpoint_weight_path, batch_size,
-                        initial_lr=0.001, next_lr=0.0001, verbose=1):
+                        initial_lr=0.001, next_lr=0.0001, verbose=1, batch_generator=True, seed=None):
     """ Finetunes model using the chain-thaw method.
 
     This is done as follows:
@@ -633,10 +634,20 @@ def train_by_chain_thaw(model, train_gen, val_data, loss, callbacks, epoch_size,
             else:
                 print('Finetuning {}'.format(layer.name))
 
-        steps = int(epoch_size / batch_size)
-        model.fit_generator(train_gen, steps_per_epoch=steps,
-                            epochs=nb_epochs, validation_data=val_data,
-                            callbacks=callbacks, verbose=(verbose >= 2))
+        if batch_generator:
+            # Use sample generator for fixed-size epoch
+            train_gen = sampling_generator(train_X, train_y, batch_size,
+                                           upsample=False, seed=seed)
+            steps = int(epoch_size / batch_size)
+            model.fit_generator(train_gen, steps_per_epoch=steps,
+                                epochs=nb_epochs, validation_data=val_data,
+                                callbacks=callbacks, verbose=1)
+        else:
+            model.fit(x=train_X, y=train_y,
+                      batch_size=batch_size,
+                      epochs=nb_epochs,
+                      validation_data=val_data,
+                      callbacks=callbacks)
 
         # Reload the best weights found to avoid overfitting
         # Wait a bit to allow proper closing of weights file
