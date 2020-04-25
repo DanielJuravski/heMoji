@@ -10,7 +10,7 @@ PARAMS=$*
 
 # set log subdir
 dt=$(date '+%d_%m_%Y_%H_%M_%S');
-sd=$LOGS_DIR"finetune_he_sentiment_last/$dt/"
+sd=$LOGS_DIR"finetune_he_sentiment/$dt/"
 mkdir -p $sd
 echo "Logging to: $sd"
 
