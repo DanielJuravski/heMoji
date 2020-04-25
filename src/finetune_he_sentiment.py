@@ -112,7 +112,7 @@ def printTime(key, msg):
     TIMES[key] = t
 
 
-def save_stats(model, test_acc, logs_dir):
+def save_stats(model, test_acc, logs_dir, train_val_stats):
     def makeGraphs(train_acc_list, val_acc_list, train_loss_list, val_loss_list, logs_dir):
         # acc graph
         plt.plot(train_acc_list, label="Train")
@@ -133,10 +133,14 @@ def save_stats(model, test_acc, logs_dir):
         print("Plotting loss to: {0}".format(fig_name))
         plt.savefig(fig_name)
 
-    train_acc_list = model.history.history['acc']
-    val_acc_list = model.history.history['val_acc']
-    train_loss_list = model.history.history['loss']
-    val_loss_list = model.history.history['val_loss']
+    if train_val_stats is not None:
+        # chain-thaw method
+        train_acc_list, val_acc_list, train_loss_list, val_loss_list = train_val_stats
+    else:
+        train_acc_list = model.history.history['acc']
+        val_acc_list = model.history.history['val_acc']
+        train_loss_list = model.history.history['loss']
+        val_loss_list = model.history.history['val_loss']
 
     makeGraphs(train_acc_list, val_acc_list, train_loss_list, val_loss_list, logs_dir)
     with open(logs_dir + 'stats.txt', 'w') as f:
@@ -172,13 +176,13 @@ def main(params):
     model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
     model.summary()
     printTime(key='train_start', msg="Start Training X,Y data")
-    model, test_acc = finetune(model, data['texts'], data['labels'], nb_classes,
-                               data['batch_size'], method=params['transfer'],
-                               epoch_size=params['epoch_size'], nb_epochs=params['epochs'],
-                               batch_generator=params['train_data_gen'], early_stop=params['early_stop'])
+    model, test_acc, train_val_stats = finetune(model, data['texts'], data['labels'], nb_classes,
+                                                data['batch_size'], method=params['transfer'],
+                                                epoch_size=params['epoch_size'], nb_epochs=params['epochs'],
+                                                batch_generator=params['train_data_gen'], early_stop=params['early_stop'])
     printTime(key='train_end', msg="End Training X,Y data")
 
-    save_stats(model, test_acc, params['logs_dir'])
+    save_stats(model, test_acc, params['logs_dir'], train_val_stats)
 
 
 if __name__ == '__main__':

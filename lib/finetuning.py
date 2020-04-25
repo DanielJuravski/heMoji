@@ -368,18 +368,21 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
         print('Metric:  {}'.format(metric))
         print('Classes: {}'.format(nb_classes))
 
+    # stats for chain-thaw method
+    stats = None
+
     if method == 'chain-thaw':
-        result = chain_thaw(model, nb_classes=nb_classes,
-                            train=(X_train, y_train),
-                            val=(X_val, y_val),
-                            test=(X_test, y_test),
-                            batch_size=batch_size, loss=loss,
-                            epoch_size=epoch_size,
-                            nb_epochs=nb_epochs,
-                            checkpoint_weight_path=checkpoint_path,
-                            evaluate=metric, verbose=verbose,
-                            batch_generator=batch_generator,
-                            early_stop=early_stop)
+        result, stats = chain_thaw(model, nb_classes=nb_classes,
+                                   train=(X_train, y_train),
+                                   val=(X_val, y_val),
+                                   test=(X_test, y_test),
+                                   batch_size=batch_size, loss=loss,
+                                   epoch_size=epoch_size,
+                                   nb_epochs=nb_epochs,
+                                   checkpoint_weight_path=checkpoint_path,
+                                   evaluate=metric, verbose=verbose,
+                                   batch_generator=batch_generator,
+                                   early_stop=early_stop)
     else:
         result = tune_trainable(model, nb_classes=nb_classes,
                                 train=(X_train, y_train),
@@ -391,7 +394,7 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
                                 checkpoint_weight_path=checkpoint_path,
                                 evaluate=metric, verbose=verbose, batch_generator=batch_generator,
                                 early_stop=early_stop)
-    return model, result
+    return model, result, stats
 
 
 def tune_trainable(model, nb_classes, train, val, test, epoch_size,
@@ -553,17 +556,17 @@ def chain_thaw(model, nb_classes, train, val, test, batch_size,
     callbacks = finetuning_callbacks(checkpoint_weight_path, patience, verbose, early_stop)
 
     # Train using chain-thaw
-    train_by_chain_thaw(model=model, train_X=X_train, train_y=y_train,
-                        val_data=(X_val, y_val), loss=loss, callbacks=callbacks,
-                        epoch_size=epoch_size, nb_epochs=nb_epochs,
-                        checkpoint_weight_path=checkpoint_weight_path,
-                        batch_size=batch_size, verbose=verbose, batch_generator=batch_generator, seed=seed)
+    stats = train_by_chain_thaw(model=model, train_X=X_train, train_y=y_train,
+                                val_data=(X_val, y_val), loss=loss, callbacks=callbacks,
+                                epoch_size=epoch_size, nb_epochs=nb_epochs,
+                                checkpoint_weight_path=checkpoint_weight_path,
+                                batch_size=batch_size, verbose=verbose, batch_generator=batch_generator, seed=seed)
 
     if evaluate == 'acc':
-        return evaluate_using_acc(model, X_test, y_test, batch_size=batch_size)
+        return evaluate_using_acc(model, X_test, y_test, batch_size=batch_size), stats
     elif evaluate == 'weighted_f1':
         return evaluate_using_weighted_f1(model, X_test, y_test, X_val, y_val,
-                                          batch_size=batch_size)
+                                          batch_size=batch_size), stats
 
 
 def train_by_chain_thaw(model, train_X, train_y, val_data, loss, callbacks, epoch_size,
@@ -603,6 +606,13 @@ def train_by_chain_thaw(model, train_X, train_y, val_data, loss, callbacks, epoc
     layers.append(None)
 
     lr = None
+
+    # stats for each layer
+    train_acc_list = []
+    val_acc_list = []
+    train_loss_list = []
+    val_loss_list = []
+
     # Finetune each layer one by one and finetune all of them at once
     # at the end
     for layer in layers:
@@ -655,3 +665,11 @@ def train_by_chain_thaw(model, train_X, train_y, val_data, loss, callbacks, epoc
         model.load_weights(checkpoint_weight_path, by_name=False)
         if verbose >= 2:
             print("Loaded weights from {}".format(checkpoint_weight_path))
+
+        # update stats
+        train_acc_list += model.history.history['acc']
+        val_acc_list += model.history.history['val_acc']
+        train_loss_list += model.history.history['loss']
+        val_loss_list += model.history.history['val_loss']
+
+    return (train_acc_list, val_acc_list, train_loss_list, val_loss_list)
