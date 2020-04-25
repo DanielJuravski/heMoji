@@ -445,7 +445,7 @@ def tune_trainable(model, nb_classes, train, val, test, epoch_size,
                             callbacks=callbacks)
     else:
         model.fit(x=X_train, y=y_train,
-                  batch_size=100,
+                  batch_size=batch_size,
                   epochs=nb_epochs,
                   validation_data=(X_val, y_val),
                   callbacks=callbacks)
