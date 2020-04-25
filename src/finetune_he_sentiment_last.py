@@ -3,23 +3,27 @@ from __future__ import division
 import json
 import sys
 import numpy as np
+import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
+from vision.get_emojis_vectors import get_softmax_weights, export_weights
+
 
 DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
-DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
+# DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
 PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
-EPOCHS = 5
+EPOCHS = 3
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
 
 nb_classes = 3
+TIMES = dict()
 
 
 def get_args():
@@ -94,6 +98,12 @@ def get_args():
     return params
 
 
+def printTime(key, msg):
+    t = datetime.datetime.now()
+    print("{0}: {1}".format(msg, t.strftime('%d/%m/%Y_%H:%M:%S')))
+    TIMES[key] = t
+
+
 def save_stats(model, test_acc, logs_dir):
     def makeGraphs(train_acc_list, val_acc_list, train_loss_list, val_loss_list, logs_dir):
         # acc graph
@@ -124,6 +134,9 @@ def save_stats(model, test_acc, logs_dir):
     with open(logs_dir + 'stats.txt', 'w') as f:
         f.writelines("Test data acc: {0}\n".format(test_acc))
         print("Test data acc: {0}\n".format(test_acc))
+        train_time = (TIMES['train_end'] - TIMES['train_start'])  # .strftime('%d/%m/%Y_%H:%M:%S')
+        msg = "All train time: " + str(train_time) + '\n'
+        f.writelines(msg)
 
 
 def count_oov(data, vocab):
@@ -150,10 +163,13 @@ def main(params):
     # Set up model and finetune
     model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
     model.summary()
+    printTime(key='train_start', msg="Start Training X,Y data")
     model, test_acc = finetune(model, data['texts'], data['labels'], nb_classes,
                                data['batch_size'], method='last',
                                epoch_size=params['epoch_size'], nb_epochs=params['epochs'],
                                batch_generator=params['train_data_gen'], early_stop=params['early_stop'])
+    printTime(key='train_end', msg="End Training X,Y data")
+
     save_stats(model, test_acc, params['logs_dir'])
 
 
