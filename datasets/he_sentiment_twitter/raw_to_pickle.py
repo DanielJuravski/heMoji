@@ -1,12 +1,10 @@
 import pickle
 
-TYPE = 'morph'  # token/morph
-INPUT_TRAIN_FILE = TYPE + '_train.tsv'
-INPUT_TEST_FILE = TYPE + '_test.tsv'
-OUTPUT_FILE_NAME = TYPE + '_data.pkl'
 
+def load_tsv_data(TYPE):
+    INPUT_TRAIN_FILE = TYPE + '_train.tsv'
+    INPUT_TEST_FILE = TYPE + '_test.tsv'
 
-def load_tsv_data():
     train_X = []
     test_X = []
     train_Y = []
@@ -62,12 +60,14 @@ def generate_data_obj(train_X, train_Y, test_X, test_Y):
     return data
 
 
-def dump_data(data):
+def dump_data(data, TYPE):
+    OUTPUT_FILE_NAME = TYPE + '_data.pkl'
     with open(OUTPUT_FILE_NAME, 'w') as f:
         pickle.dump(data, f)
 
 
 if __name__ == '__main__':
-    train_X, train_Y, test_X, test_Y = load_tsv_data()
+    TYPE = 'morph'
+    train_X, train_Y, test_X, test_Y = load_tsv_data(TYPE)
     data = generate_data_obj(train_X, train_Y, test_X, test_Y)
-    dump_data(data)
+    dump_data(data, TYPE)

@@ -1,6 +1,8 @@
 from __future__ import print_function
+from __future__ import division
 import json
 import sys
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -8,15 +10,16 @@ import matplotlib.pyplot as plt
 from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
 
-DATASET_PATH = 'datasets/he_sentiment_twitter/data.pickle'
-nb_classes = 3
-
+DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
+DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
 PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
 EPOCHS = 5
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
+
+nb_classes = 3
 
 
 def get_args():
@@ -123,6 +126,16 @@ def save_stats(model, test_acc, logs_dir):
         print("Test data acc: {0}\n".format(test_acc))
 
 
+def count_oov(data, vocab):
+    train_oov = np.count_nonzero(data['texts'][0] == vocab['CUSTOM_UNKNOWN'])
+    test_oov = np.count_nonzero(data['texts'][2] == vocab['CUSTOM_UNKNOWN'])
+    train_oov_ratio = train_oov / 28787
+    test_oov_ratio = test_oov / 18912
+
+    print("Train tokens OOV ratio: {0} ({1} tokens out of {2})".format(train_oov_ratio, train_oov, 28787))
+    print("Test tokens OOV ratio: {0} ({1} tokens out of {2})".format(test_oov_ratio, test_oov, 18912))
+
+
 def main(params):
     with open(params['vocab_path'], 'r') as f:
         vocab = json.load(f)
@@ -130,6 +143,9 @@ def main(params):
 
     # Load dataset.
     data = load_benchmark(params['data_path'], vocab, vocab_uint=32)  # TODO: maybe the maxlen should be fixed to 80?
+
+    # count OOV
+    count_oov(data, vocab)
 
     # Set up model and finetune
     model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
