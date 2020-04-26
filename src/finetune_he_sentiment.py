@@ -184,6 +184,11 @@ def main(params):
 
     save_stats(model, test_acc, params['logs_dir'], train_val_stats)
 
+    # save model
+    model_path = params["logs_dir"] + "model.hdf5"
+    print("Saving model to: {0}".format(model_path))
+    model.save(model_path)
+
 
 if __name__ == '__main__':
     """Finetuning example.
