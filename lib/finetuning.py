@@ -329,16 +329,14 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
 
     (X_train, y_train) = (texts[0], labels[0])
     (X_val, y_val) = (texts[1], labels[1])
-    ### (X_test, y_test) = (texts[2], labels[2])
-    (X_test, y_test) = ([], [])
+    (X_test, y_test) = (texts[2], labels[2])
 
     checkpoint_path = '{}/heMoji-checkpoint-{}.hdf5' \
                       .format(WEIGHTS_DIR, str(uuid.uuid4()))
 
     # Check dimension of labels
     if error_checking:
-        ### for ls in [y_train, y_val, y_test]:
-        for ls in [y_train, y_val]:
+        for ls in [y_train, y_val, y_test]:
             if not ls.ndim == 1:
                 print('WARNING (finetune): The dimension of the '
                       'provided label list does not match the expected '
@@ -549,7 +547,7 @@ def chain_thaw(model, nb_classes, train, val, test, batch_size,
     if nb_classes > 2:
         y_train = to_categorical(y_train)
         y_val = to_categorical(y_val)
-        ### y_test = to_categorical(y_test)
+        y_test = to_categorical(y_test)
 
     if verbose:
         print('Training..')
@@ -565,8 +563,7 @@ def chain_thaw(model, nb_classes, train, val, test, batch_size,
                                 batch_size=batch_size, verbose=verbose, batch_generator=batch_generator, seed=seed)
 
     if evaluate == 'acc':
-        ### return evaluate_using_acc(model, X_test, y_test, batch_size=batch_size), stats
-        return [], None
+        return evaluate_using_acc(model, X_test, y_test, batch_size=batch_size), stats
 
     elif evaluate == 'weighted_f1':
         return evaluate_using_weighted_f1(model, X_test, y_test, X_val, y_val,

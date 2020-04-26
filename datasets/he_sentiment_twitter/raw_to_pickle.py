@@ -49,7 +49,7 @@ def generate_data_obj(train_X, train_Y, test_X, test_Y):
 
     # test_ind
     test_size = len(test_Y)
-    test_ind = range(test_size)
+    test_ind = range(train_size, train_size + test_size)
     data['test_ind'] = test_ind
 
     # val_ind
@@ -67,7 +67,7 @@ def dump_data(data, TYPE):
 
 
 if __name__ == '__main__':
-    TYPE = 'morph'
+    TYPE = 'token'
     train_X, train_Y, test_X, test_Y = load_tsv_data(TYPE)
     data = generate_data_obj(train_X, train_Y, test_X, test_Y)
     dump_data(data, TYPE)
