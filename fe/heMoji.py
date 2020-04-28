@@ -42,29 +42,40 @@ class EmojiUI:
         self.tokens = None
 
     def home_page(self):
-        # tittles
-        st.balloons()
-        st.title('***heMoji*** Predictor')
-        st.subheader('***heMoji*** will try to detect the sentiment, emotion and sarcasm of your Hebrew sentence and predict the correspond emoji for it')
+        st.sidebar.title('***heMoji***')
+        side_bar_str = st.sidebar.radio('', ('Home', 'About'))
+        input_sentence_str = example_sentence_str = None
+        if side_bar_str == 'Home':
+            # tittles
+            st.balloons()
+            st.title('***heMoji*** Predictor')
+            st.subheader('***heMoji*** will try to detect the sentiment, emotion and sarcasm of your Hebrew sentence and predict the correspond emoji for it')
 
-        # user input
-        input_sentence_str, input_sentence_warning_str = self.get_input_sentence()
-        if input_sentence_warning_str:
-            self.w_input_sentence_warning = st.warning(input_sentence_warning_str)
-        self.w_input_sentence_error = st.empty()
+            # user input
+            input_sentence_str, input_sentence_warning_str = self.get_input_sentence()
+            if input_sentence_warning_str:
+                self.w_input_sentence_warning = st.warning(input_sentence_warning_str)
+            self.w_input_sentence_error = st.empty()
 
-        # result table
-        self.w_result_table_text = st.empty()
-        self.w_result_table = st.empty()
+            # result table
+            self.w_result_table_text = st.empty()
+            self.w_result_table = st.empty()
 
-        # example sentences
-        st.write("<p style='font-size:80%;'>Try to click on any example sentence below:</p>", unsafe_allow_html=True)
-        example_sentence_str = self.use_example_sentence()
-        if example_sentence_str:
-            self.w_input_sentence_text.text_input('Insert Hebrew sentence:', value='', key=self.state.key)
+            # example sentences
+            st.write("<p style='font-size:80%;'>Try to click on any example sentence below:</p>", unsafe_allow_html=True)
+            example_sentence_str = self.use_example_sentence()
+            if example_sentence_str:
+                self.w_input_sentence_text.text_input('Insert Hebrew sentence:', value='', key=self.state.key)
+
+        elif side_bar_str == 'About':
+            st.title('About ***heMoji***')
+            st.write("The ***heMoji*** model is based on the wonderful deepMoji (Felbo et al., 2017). It is about time to get some emoji predictions over Hebrew text!")
+            st.write("The model was trained over millions of tweets that were composed out of Hebrew sentences and included at least one of following 64 predictable emojis:")
+            st.write(u'\U0001f601', u'\U0001f602', u'\U0001f605', u'\U0001f604', u'\U0001f607', u'\U0001f609', u'\U0001f608', u'\U0001f60b', u'\U0001f60a', u'\U0001f60d', u'\U0001f60c', u'\U0001f60f', u'\U0001f60e', u'\U0001f611', u'\U0001f610', u'\U0001f613', u'\U0001f612', u'\U0001f495', u'\U0001f614', u'\U0001f497', u'\U0001f616', u'\U0001f499', u'\U0001f618', u'\U0001f61d', u'\U0001f61c', u'\U0001f61e', u'\U0001f621', u'\U0001f623', u'\U0001f622', u'\U0001f625', u'\U0001f624', u'\U0001f3a7', u'\U0001f630', u'\U0001f629', u'\U0001f62b', u'\U0001f62a', u'\U0001f62d', u'\U0001f49c', u'\U0001f631', u'\U0001f389', u'\U0001f633', u'\u270c', u'\U0001f634', u'\U0001f637', u'\U0001f3b6', u'\u263a', u'\u270b', u'\U0001f44a', u'\U0001f648', u'\U0001f44b', u'\U0001f64a', u'\U0001f44d', u'\U0001f44c', u'\U0001f64f', u'\U0001f64c', u'\U0001f48b', u'\U0001f44f', u'\U0001f525', u'\U0001f44e', u'\u2665', u'\u2764', u'\U0001f4aa', u'\U0001f615', u'\U0001f494')
 
         # a nice BIU logo
         image = Image.open('biu_logo_transparent.png')
+        st.write("")
         st.image(image, width=100)
 
         return input_sentence_str, example_sentence_str

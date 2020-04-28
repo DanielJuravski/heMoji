@@ -141,3 +141,6 @@ data01e2l = {
     u'\U0001f630': 63
 }
 l2edata01 = {v: k for k, v in data01e2l.items()}
+
+if __name__ == '__main__':
+    print(data01e2l.keys())
