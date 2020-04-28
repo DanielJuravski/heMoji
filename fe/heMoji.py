@@ -61,7 +61,7 @@ class EmojiUI:
         st.write("<p style='font-size:80%;'>Try to click on any example sentence below:</p>", unsafe_allow_html=True)
         example_sentence_str = self.use_example_sentence()
         if example_sentence_str:
-            self.w_input_sentence_text.text_input('Insert Hebrew sentence:', value=example_sentence_str, key=0)
+            self.w_input_sentence_text.text_input('Insert Hebrew sentence:', value='', key=self.state.key)
 
         # a nice BIU logo
         image = Image.open('biu_logo_transparent.png')
@@ -70,12 +70,14 @@ class EmojiUI:
         return input_sentence_str, example_sentence_str
 
     def get_input_sentence(self):
+        self.state = SessionState.get(key=0)
+
         input_sentence_warning_str = None
         # user input sentence
         self.w_input_sentence_text = st.empty()
         # set sentence_widget location to the right
         st.markdown("""<style>input {direction: RTL;}</style>""", unsafe_allow_html=True)
-        input_sentence_str = self.w_input_sentence_text.text_input('Insert Hebrew sentence:', key=0)
+        input_sentence_str = self.w_input_sentence_text.text_input('Insert Hebrew sentence:', key=self.state.key)
 
         if str_contains_en_chars(input_sentence_str):
             input_sentence_warning_str = "Your sentence contains non Hebrew characters, which the predictor doesn't support"
@@ -112,18 +114,25 @@ class EmojiUI:
         b7 = st.button(s7)
 
         if b1:
+            self.state.key += 1
             return s1
         elif b2:
+            self.state.key += 1
             return s2
         elif b3:
+            self.state.key += 1
             return s3
         elif b4:
+            self.state.key += 1
             return s4
         elif b5:
+            self.state.key += 1
             return s5
         elif b6:
+            self.state.key += 1
             return s6
         elif b7:
+            self.state.key += 1
             return s7
         else:
             return None
