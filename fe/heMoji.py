@@ -33,9 +33,6 @@ HOME = expanduser("~")
 LOGGER_PATH = HOME + '/emoji_predictor.log'
 
 
-
-
-
 def loaders():
     vocab = load_my_vocab()
     sentok = SentenceTokenizer(vocab, maxlen, prod=True, wanted_emojis=e2l, uint=32)
@@ -133,31 +130,28 @@ def logger(input_sentence, tokens, log_result):
         f.writelines("\n")
 
 
-def use_example_sentence():
+def use_example_sentence(w_example_sentence):
+    # set the options in the drop-down list R2L
+    st.markdown("""<style>
+                div[role="listbox"] ul {
+                    direction: RTL;
+                    text-align: right;
+                    } </style>""", unsafe_allow_html=True)
+
     # set selectbox location to the right
-    st.markdown("""
-                    <style>
-                    .stSelectbox>selectbox {
-                        unicode-bidi:bidi-override;
-                        direction: RTL;
-                        display: block;
-                        margin-left: auto;}
-                    </style>
-                        """, unsafe_allow_html=True)
+    # st.markdown("""<style>
+    #             .stSelectbox  {
+    #                 direction: RTL;
+    #                 text-align: right;
+    #                 } </style>""", unsafe_allow_html=True)
 
     with open('examples.json') as f:
-        conf = json.load(f, encoding='utf-8')
-        s1 = conf['s1']
-        s2 = conf['s2']
-        s3 = conf['s3']
-        s4 = conf['s4']
-        s5 = conf['s5']
-        s6 = conf['s6']
-        s7 = conf['s7']
+        example_sents = json.load(f, encoding='utf-8')
 
     selectbox_label = "Or choose any example sentence below:"
+    options = [""] + example_sents.values()
 
-    selected = st.selectbox(selectbox_label, ["", s1, s2, s3, s4, s5, s6, s7])
+    selected = w_example_sentence.selectbox(selectbox_label, options=options)
 
     return selected
 
@@ -191,20 +185,7 @@ def evaluate_input_sentence(model, session, tokens):
     return result, log_result
 
 
-def show_results(model, session, sentok, sentence):
-    log_sentence = False
-
-    # # user input sentence
-    # if input_sentence_str:
-    #     sentence_str = input_sentence_str
-    #     log_sentence = True
-    #
-    # # state = SessionState.get(key=0)
-    # if example_sentence_str is not None:
-    #     # state.key += 1
-    #     sentence_str = example_sentence_str
-    #     log_sentence = False
-
+def show_results(model, session, sentok, sentence, log_sentence=True):
     if sentence:
         tokens = encode_input_sentence(sentok, sentence)
         if tokens is not None:
@@ -219,6 +200,36 @@ def show_results(model, session, sentok, sentence):
                 logger(sentence, tokens, log_result)
 
 
+def is_sentence_valid(w_input_sentence_warning, sentence):
+    """
+    check if the inserted sentence is valid,
+    depends on every check, raise an warning and return flag if continue to prediction:
+    1. num of words > 2:
+    - raise warning
+    - dont predict that sentence
+    2. not contain EN characters
+    - raise warning
+    - predict that sentence
+    :param w_input_sentence_warning:
+    :param sentence:
+    :return:
+    """
+    to_predict = True
+
+    # show warning if the sentence shorter than 3 words
+    if 0 < len(sentence.split()) <= 2:
+        w_input_sentence_warning.warning(
+            "Your sentence seems to be too short, pls. insert another one")
+        to_predict = False
+
+    # show warning if the sentence contains english chars
+    elif str_contains_en_chars(sentence):
+        w_input_sentence_warning.warning(
+            "Your sentence contains non Hebrew characters, which the predictor doesn't support")
+
+    return to_predict
+
+
 def page_home(model, session, sentok):
     st.balloons()
     st.title('***heMoji*** Predictor')
@@ -229,17 +240,23 @@ def page_home(model, session, sentok):
     w_input_sentence_warning = st.empty()
 
     # example sentences
-    example_sentence_str = use_example_sentence()
+    w_example_sentence = st.empty()
+    example_sentence_str = use_example_sentence(w_example_sentence)
 
     # set sentence_widget location to the right
     st.markdown("""<style>input {direction: RTL;}</style>""", unsafe_allow_html=True)
     sentence = w_input_sentence_text.text_input('Insert Hebrew sentence:', value=example_sentence_str)
 
-    if str_contains_en_chars(sentence):
-        w_input_sentence_warning.warning("Your sentence contains non Hebrew characters, which the predictor doesn't support")
+    # some validity checks of the sentence
+    to_predict = is_sentence_valid(w_input_sentence_warning, sentence)
 
-    show_results(model, session, sentok, sentence)
+    # don't log example sentence
+    log_sentence = True
+    if sentence == example_sentence_str:
+        log_sentence = False
 
+    if to_predict:
+        show_results(model, session, sentok, sentence, log_sentence=log_sentence)
 
 
 def page_about():
@@ -260,6 +277,22 @@ def page_about():
              u'\U0001f494')
 
 
+def hide_hamburger_menu():
+    hide_menu_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            </style>
+            """
+    st.markdown(hide_menu_style, unsafe_allow_html=True)
+
+
+def show_biu_logo():
+    # a nice BIU logo
+    image = Image.open('biu_logo_transparent.png')
+    st.write("")
+    st.image(image, width=100)
+
+
 def ui(model, session, sentok):
     # sidebar
     st.sidebar.title('***heMoji***')
@@ -269,10 +302,8 @@ def ui(model, session, sentok):
     elif side_bar_str == 'About':
         page_about()
 
-    # a nice BIU logo
-    image = Image.open('biu_logo_transparent.png')
-    st.write("")
-    st.image(image, width=100)
+    hide_hamburger_menu()
+    show_biu_logo()
 
 
 if __name__ == '__main__':
@@ -281,8 +312,7 @@ if __name__ == '__main__':
     """
 
     # TODO: make the selectbow text R2L
-    # TODO: clean the selectboe value id input_text was inserted
-    # TODO: set up logger (do not log example sentences)
+    # TODO: clean the selectbox value id input_text was inserted (can be done with func_str?)
 
     model, session, sentok = loaders()
 
