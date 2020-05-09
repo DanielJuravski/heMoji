@@ -1,0 +1,27 @@
+{
+    "he": {
+        "title": "<i><b> Heמוג'י</b></i>",
+        "sub_title": "<i><b>Heמוג'י</b></i> ינסה להבין את הסנטימנט/רגש/סרקזם שחבוי במשפט שלך, ולחזות את האימוג'י המתאים",
+
+        "text_input": "הכנס משפט:",
+        "examples_sents": "או בחר משפט מהרשימה:",
+
+        "table_label": "אימוג'ים חזויים:",
+        "table_emoji": "אימוג'י",
+        "table_prob": "הסתברות"
+
+    },
+    "en": {
+        "title": "***heMoji*** Predictor",
+        "sub_title": "***heMoji*** will try to detect the sentiment, emotion and sarcasm of your Hebrew sentence and predict the correspond emoji for it",
+
+        "text_input": "Insert Hebrew sentence:",
+        "examples_sents": "Or choose any example sentence below:",
+
+        "table_label": "Predicted emojis:",
+        "table_emoji": "emoji",
+        "table_prob": "prob"
+    }
+
+}
+

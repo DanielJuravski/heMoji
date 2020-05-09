@@ -31,14 +31,27 @@ e2l = e2l  # let's have the 'Unresolved' error once and last here
 TOP_E = 5  # len(e2l)
 HOME = expanduser("~")
 LOGGER_PATH = HOME + '/emoji_predictor.log'
+global LANG  # he/en
+LANG = 'en'  # he/en
+
+
+def load_ui_labels():
+    with open('ui_text_labels.json', 'r') as f:
+        ui_labels = json.load(f)
+
+    return ui_labels
 
 
 def loaders():
+    # model
     vocab = load_my_vocab()
     sentok = SentenceTokenizer(vocab, maxlen, prod=True, wanted_emojis=e2l, uint=32)
     model, session = load_heMoji_model()
 
-    return model, session, sentok
+    # ui labels
+    ui_labels = load_ui_labels()
+
+    return model, session, sentok, ui_labels
 
 
 @st.cache(allow_output_mutation=True)
@@ -72,7 +85,7 @@ def design_cells(val):
     :return:
     """
     # ugly way to get if it is emoji or prob-val
-    if val[0][0] != ".":
+    if "." not in str(val[0]):
         # emoji
         return ['font-size:20pt'] * TOP_E
     else:
@@ -91,8 +104,8 @@ def edit_probs(result):
     for i in range(TOP_E):
         p = result.data[i][1]
         p = round(p, 4)
-        p_str = str(p)[1:]
-        result.data[i][1] = p_str
+        # p_str = str(p)[1:]
+        result.data[i][1] = p
 
     return result
 
@@ -130,13 +143,22 @@ def logger(input_sentence, tokens, log_result):
         f.writelines("\n")
 
 
-def use_example_sentence(w_example_sentence):
+def use_example_sentence(w_example_sentence, ui_labels):
+    # selectbox options
+    with open('examples.json') as f:
+        example_sents = json.load(f, encoding='utf-8')
+        options = ["".join(example_sents[str(i)]) for i in range(len(example_sents))]
+        options = [""] + options
+
+    # selectbox label
+    if LANG == 'he':
+        st.markdown("""<style> .stSelectbox {direction: RTL; text-align: right;}</style>""", unsafe_allow_html=True)
+        selectbox_label = ui_labels['he']['examples_sents']
+    elif LANG == 'en':
+        selectbox_label = ui_labels['en']['examples_sents']
+
     # set the options in the drop-down list R2L
-    st.markdown("""<style>
-                div[role="listbox"] ul {
-                    direction: RTL;
-                    text-align: right;
-                    } </style>""", unsafe_allow_html=True)
+    st.markdown("""<style>div[role="listbox"] ul {direction: RTL; text-align: right;} </style>""", unsafe_allow_html=True)
 
     # set selectbox location to the right
     # st.markdown("""<style>
@@ -145,11 +167,7 @@ def use_example_sentence(w_example_sentence):
     #                 text-align: right;
     #                 } </style>""", unsafe_allow_html=True)
 
-    with open('examples.json') as f:
-        example_sents = json.load(f, encoding='utf-8')
 
-    selectbox_label = "Or choose any example sentence below:"
-    options = [""] + example_sents.values()
 
     selected = w_example_sentence.selectbox(selectbox_label, options=options)
 
@@ -185,7 +203,18 @@ def evaluate_input_sentence(model, session, tokens):
     return result, log_result
 
 
-def show_results(model, session, sentok, sentence, log_sentence=True):
+def show_pred_table(result_table, ui_labels):
+    if LANG == 'he':
+        table_label = """<p style='font-size:80%; direction: RTL; text-align: right;'>{0}</p>""".format(ui_labels['he']['table_label'])
+        st.markdown("""<style> .stTable {direction: RTL}</style>""", unsafe_allow_html=True)
+    elif LANG == 'en':
+        table_label = """<p style='font-size:80%;'>{0}</p>""".format(ui_labels['en']['table_label'])
+
+    st.markdown(table_label, unsafe_allow_html=True)
+    st.table(result_table)
+
+
+def show_results(model, session, sentok, ui_labels, sentence, log_sentence=True):
     if sentence:
         tokens = encode_input_sentence(sentok, sentence)
         if tokens is not None:
@@ -193,8 +222,7 @@ def show_results(model, session, sentok, sentence, log_sentence=True):
             result_table = style_result(result)
 
             # display emoji predictions
-            st.markdown("<p style='font-size:80%;'>Predicted emojis:</p>", unsafe_allow_html=True)
-            st.table(result_table)
+            show_pred_table(result_table, ui_labels)
 
             if log_sentence:
                 logger(sentence, tokens, log_result)
@@ -230,22 +258,58 @@ def is_sentence_valid(w_input_sentence_warning, sentence):
     return to_predict
 
 
-def page_home(model, session, sentok):
-    st.balloons()
-    st.title('***heMoji*** Predictor')
-    st.subheader('***heMoji*** will try to detect the sentiment, emotion and sarcasm of your Hebrew sentence and predict the correspond emoji for it')
+def show_title(ui_labels):
+    if LANG == 'he':
+        title = """<style> he_h1 {
+                        direction: RTL; text-align: right;
+                        display: block;
+                        font-size: 2em;
+                        margin-top: 0.67em;
+                        margin-bottom: 0.67em;
+                        margin-left: 0;
+                        margin-right: 0;
+                        font-weight: bold;
+                        } </style> <he_h1>%s</he_h1>""" % (ui_labels['he']['title'])
+        st.markdown(title, unsafe_allow_html=True)
+    elif LANG == 'en':
+        st.title(ui_labels['en']['title'])
 
-    # user input sentence
+
+def show_sub_title(ui_labels):
+    if LANG == 'he':
+        sub_title = """<style> h3 {direction: RTL; text-align: right;} </style> <h3>%s</h3>""" % (ui_labels['he']['sub_title'])
+        st.markdown(sub_title, unsafe_allow_html=True)
+    elif LANG == 'en':
+        st.subheader(ui_labels['en']['sub_title'])
+
+
+def input_sentence(w_input_sentence_text, example_sentence_str, ui_labels):
+    if LANG == 'he':
+        st.markdown("""<style> .stTextInput {direction: RTL; text-align: right;}</style>""", unsafe_allow_html=True)
+        sentence = w_input_sentence_text.text_input(ui_labels['he']['text_input'], value=example_sentence_str)
+    elif LANG == 'en':
+        st.markdown("""<style> input {direction: RTL;}</style>""", unsafe_allow_html=True)
+        sentence = w_input_sentence_text.text_input(ui_labels['en']['text_input'], value=example_sentence_str)
+
+    return sentence
+
+
+def page_home(model, session, sentok, ui_labels):
+    st.balloons()
+
+    show_title(ui_labels)
+    show_sub_title(ui_labels)
+
+    # user input sentence place holder
     w_input_sentence_text = st.empty()
     w_input_sentence_warning = st.empty()
 
     # example sentences
     w_example_sentence = st.empty()
-    example_sentence_str = use_example_sentence(w_example_sentence)
+    example_sentence_str = use_example_sentence(w_example_sentence, ui_labels)
 
-    # set sentence_widget location to the right
-    st.markdown("""<style>input {direction: RTL;}</style>""", unsafe_allow_html=True)
-    sentence = w_input_sentence_text.text_input('Insert Hebrew sentence:', value=example_sentence_str)
+    # fill in user input sentence
+    sentence = input_sentence(w_input_sentence_text, example_sentence_str, ui_labels)
 
     # some validity checks of the sentence
     to_predict = is_sentence_valid(w_input_sentence_warning, sentence)
@@ -256,7 +320,7 @@ def page_home(model, session, sentok):
         log_sentence = False
 
     if to_predict:
-        show_results(model, session, sentok, sentence, log_sentence=log_sentence)
+        show_results(model, session, sentok, ui_labels, sentence, log_sentence=log_sentence)
 
 
 def page_about():
@@ -293,13 +357,24 @@ def show_biu_logo():
     st.image(image, width=100)
 
 
-def ui(model, session, sentok):
-    # sidebar
+def side_bar():
     st.sidebar.title('***heMoji***')
-    side_bar_str = st.sidebar.radio('', ('Home', 'About'))
-    if side_bar_str == 'Home':
-        page_home(model, session, sentok)
-    elif side_bar_str == 'About':
+    side_bar_str = st.sidebar.radio('Page:', ('Home', 'About'))
+
+    # st.markdown('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    st.sidebar.markdown("")
+    global LANG
+    LANG = st.sidebar.radio('Language:', ('en', 'he'))
+
+    return side_bar_str
+
+
+def ui(model, session, sentok, ui_labels):
+    page = side_bar()
+
+    if page == 'Home':
+        page_home(model, session, sentok, ui_labels)
+    elif page == 'About':
         page_about()
 
     hide_hamburger_menu()
@@ -311,10 +386,7 @@ if __name__ == '__main__':
     some pretty UI that loads the model and predicts emoji based on text
     """
 
-    # TODO: make the selectbow text R2L
-    # TODO: clean the selectbox value id input_text was inserted (can be done with func_str?)
+    model, session, sentok, ui_labels = loaders()
 
-    model, session, sentok = loaders()
-
-    ui(model, session, sentok)
+    ui(model, session, sentok, ui_labels)
 
