@@ -32,7 +32,7 @@ TOP_E = 5  # len(e2l)
 HOME = expanduser("~")
 LOGGER_PATH = HOME + '/emoji_predictor.log'
 global LANG  # he/en
-LANG = 'he'  # he/en
+LANG = 'en'  # he/en
 
 
 def load_ui_labels():
@@ -147,7 +147,8 @@ def use_example_sentence(w_example_sentence, ui_labels):
     # selectbox options
     with open('examples.json') as f:
         example_sents = json.load(f, encoding='utf-8')
-        options = [""] + example_sents.values()
+        options = ["".join(example_sents[str(i)]) for i in range(len(example_sents))]
+        options = [""] + options
 
     # selectbox label
     if LANG == 'he':
