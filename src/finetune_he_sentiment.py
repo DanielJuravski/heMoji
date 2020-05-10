@@ -20,7 +20,7 @@ VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
 EPOCHS = 2
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
-TRANSFER = 'last'
+TRANSFER = 'add-last'
 
 nb_classes = 3
 TIMES = dict()
@@ -161,6 +161,16 @@ def count_oov(data, vocab):
     print("Test tokens OOV ratio: {0} ({1} tokens out of {2})".format(test_oov_ratio, test_oov, 18912))
 
 
+def init_hemoji_architecture(nb_classes, data, params, nb_tokens):
+    if params['transfer'] == 'add-last':
+        model = hemoji_transfer(nb_classes=64, maxlen=data['maxlen'], weight_path=params['model_path'],
+                                nb_tokens=nb_tokens, gpu=params['gpu'], exclude_layer_names=[])
+    else:
+        model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
+
+    return model
+
+
 def main(params):
     with open(params['vocab_path'], 'r') as f:
         vocab = json.load(f)
@@ -173,7 +183,7 @@ def main(params):
     # count_oov(data, vocab)
 
     # Set up model and finetune
-    model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
+    model = init_hemoji_architecture(nb_classes, data, params, nb_tokens)
     model.summary()
     printTime(key='train_start', msg="Start Training X,Y data")
     model, test_acc, train_val_stats = finetune(model, data['texts'], data['labels'], nb_classes,
@@ -193,8 +203,8 @@ def main(params):
 if __name__ == '__main__':
     """Finetuning example.
 
-    Trains the heMoji model on the he sentiment tweeter dataset, using the 'last'
-    and 'chain-thaw' finetuning method and the accuracy metric.
+    Trains the heMoji model on the he sentiment tweeter dataset,
+    using the 'last', 'chain-thaw' and 'add-last' finetuning method and the accuracy metric.
 
     The 'last' method (transfer param) does the following:
     0) Load all weights except for the softmax layer. Do not add tokens to the
@@ -209,6 +219,13 @@ if __name__ == '__main__':
     2) Freeze every layer except the first layer and train it.
     3) Freeze every layer except the second etc., until the second last layer.
     4) Unfreeze all layers and train entire model.
+    
+    The 'add-last' method (my edit) (transfer param) does the following:
+    0) Load all weights including the softmax layer.
+       Do not add tokens to the vocabulary and do not extend the embedding layer.
+    1) Freeze all layers including the softmax layer.
+    2) Add MLP layer (32,nb_calsses_ after the softmax layer.
+    3) Train. 
     """
 
     params = get_args()

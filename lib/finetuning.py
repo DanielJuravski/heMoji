@@ -17,6 +17,9 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.models import model_from_json
+from keras import Sequential
+from keras.layers import Dense, Dropout
+from keras.regularizers import l2
 
 from global_variables import (
     FINETUNING_METHODS,
@@ -347,7 +350,7 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
 
     if method in ['last', 'new']:
         lr = 0.001
-    elif method in ['full', 'chain-thaw']:
+    elif method in ['full', 'chain-thaw', 'add-last']:
         lr = 0.0001
 
     loss = 'binary_crossentropy' if nb_classes <= 2 \
@@ -361,6 +364,19 @@ def finetune(model, texts, labels, nb_classes, batch_size, method,
     if method != 'chain-thaw':
         adam = Adam(clipnorm=1, lr=lr)
         model.compile(loss=loss, optimizer=adam, metrics=['accuracy'])
+
+    # If using add-last, freeze all layers and add MLP layer
+    if method == 'add-last':
+        model = freeze_layers(model, unfrozen_keyword=None)
+        wrap_model = Sequential()
+        wrap_model.add(model)
+        wrap_model.add(Dense(32, kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01), activation='relu', name='linear_0'))
+        wrap_model.add(Dropout(0.5, name='dropout_0'))
+        wrap_model.add(Dense(nb_classes, kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01), activation='relu', name='linear_1'))
+
+        adam = Adam(clipvalue=0.5, lr=lr)
+        wrap_model.compile(loss=loss, optimizer=adam, metrics=['accuracy'])
+        model = wrap_model
 
     # Training
     if verbose:

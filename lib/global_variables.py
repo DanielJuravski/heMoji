@@ -23,5 +23,5 @@ WEIGHTS_DIR = tempfile.mkdtemp()
 
 NB_TOKENS = 10000
 NB_EMOJI_CLASSES = 64
-FINETUNING_METHODS = ['last', 'full', 'new', 'chain-thaw']
+FINETUNING_METHODS = ['last', 'full', 'new', 'chain-thaw', 'add-last']
 FINETUNING_METRICS = ['acc', 'weighted']
