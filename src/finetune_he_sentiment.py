@@ -12,15 +12,15 @@ from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
 
 
-DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
-# DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
+# DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
+DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
 PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
 EPOCHS = 2
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
-TRANSFER = 'chain-thaw'
+TRANSFER = 'last'
 
 nb_classes = 3
 TIMES = dict()
@@ -167,10 +167,10 @@ def main(params):
         nb_tokens = len(vocab)
 
     # Load dataset.
-    data = load_benchmark(params['data_path'], vocab, vocab_uint=32)  # TODO: maybe the maxlen should be fixed to 80?
+    data = load_benchmark(params['data_path'], vocab, vocab_uint=32)
 
     # count OOV
-    count_oov(data, vocab)
+    # count_oov(data, vocab)
 
     # Set up model and finetune
     model = hemoji_transfer(nb_classes, data['maxlen'], params['model_path'], nb_tokens=nb_tokens, gpu=params['gpu'])
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     """Finetuning example.
 
     Trains the heMoji model on the he sentiment tweeter dataset, using the 'last'
-    finetuning method and the accuracy metric.
+    and 'chain-thaw' finetuning method and the accuracy metric.
 
     The 'last' method (transfer param) does the following:
     0) Load all weights except for the softmax layer. Do not add tokens to the
