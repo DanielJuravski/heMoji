@@ -474,7 +474,12 @@ def tune_trainable(model, nb_classes, train, val, test, epoch_size,
     # Reload the best weights found to avoid overfitting
     # Wait a bit to allow proper closing of weights file
     sleep(1)
-    model.load_weights(checkpoint_weight_path, by_name=False)
+    try:
+        model.load_weights(checkpoint_weight_path, by_name=False)
+    except ImportError as e:
+        # if val_loss is nan, no weight were saved
+        print(e)
+
     if verbose >= 2:
         print("Loaded weights from {}".format(checkpoint_weight_path))
 

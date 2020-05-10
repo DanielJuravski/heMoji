@@ -17,7 +17,7 @@ DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
 PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
-EPOCHS = 2
+EPOCHS = 1
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
 TRANSFER = 'add-last'
@@ -112,7 +112,7 @@ def printTime(key, msg):
     TIMES[key] = t
 
 
-def save_stats(model, test_acc, logs_dir, train_val_stats):
+def save_stats(model, test_acc, logs_dir, train_val_stats, method):
     def makeGraphs(train_acc_list, val_acc_list, train_loss_list, val_loss_list, logs_dir):
         # acc graph
         plt.plot(train_acc_list, label="Train")
@@ -137,10 +137,14 @@ def save_stats(model, test_acc, logs_dir, train_val_stats):
         # chain-thaw method
         train_acc_list, val_acc_list, train_loss_list, val_loss_list = train_val_stats
     else:
-        train_acc_list = model.history.history['acc']
-        val_acc_list = model.history.history['val_acc']
-        train_loss_list = model.history.history['loss']
-        val_loss_list = model.history.history['val_loss']
+        if method == 'add-last':
+            h = model.model.history.history
+        else:
+            h = model.history.history
+        train_acc_list = h['acc']
+        val_acc_list = h['val_acc']
+        train_loss_list = h['loss']
+        val_loss_list = h['val_loss']
 
     makeGraphs(train_acc_list, val_acc_list, train_loss_list, val_loss_list, logs_dir)
     with open(logs_dir + 'stats.txt', 'w') as f:
@@ -192,7 +196,7 @@ def main(params):
                                                 batch_generator=params['train_data_gen'], early_stop=params['early_stop'])
     printTime(key='train_end', msg="End Training X,Y data")
 
-    save_stats(model, test_acc, params['logs_dir'], train_val_stats)
+    save_stats(model, test_acc, params['logs_dir'], train_val_stats, method=params['transfer'])
 
     # save model
     model_path = params["logs_dir"] + "model.hdf5"
