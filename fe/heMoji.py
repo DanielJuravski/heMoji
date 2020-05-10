@@ -341,7 +341,7 @@ def page_about():
              u'\U0001f494')
 
 
-def hide_hamburger_menu():
+def hide_hamburger_and_footer():
     hide_menu_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -349,17 +349,45 @@ def hide_hamburger_menu():
             """
     st.markdown(hide_menu_style, unsafe_allow_html=True)
 
+    # hide_footer_style = """
+    # <style>
+    # .reportview-container .main footer {visibility: hidden;
+    # }
+    # """
+    # st.markdown(hide_footer_style, unsafe_allow_html=True)
+
 
 def show_biu_logo():
     # a nice BIU logo
-    image = Image.open('biu_logo_transparent.png')
-    st.write("")
-    st.image(image, width=100)
+    # image = Image.open('biu_logo_transparent.png')
+    # st.write("")
+    # st.image(image, width=100)
+
+    # logo in the footer
+    with open("biu_logo.base64", "r") as f:
+        image_base64 = f.read()
+        image_formatter = "data:image/jpeg;base64," + image_base64
+
+    footer = """
+    <style>
+    .reportview-container .main footer {
+        background-image: url(%s);
+        background-repeat: no-repeat;
+        font-size: 0px;
+        padding: 60px;
+        top: 10px;
+        bottom: 10px;
+        position: sticky;
+    }
+    """ % (image_formatter)
+    st.markdown(footer, unsafe_allow_html=True)
 
 
 def side_bar():
     st.sidebar.title('***heMoji***')
     side_bar_str = st.sidebar.radio('Page:', ('Home', 'About'))
+
+    st.sidebar.markdown("---")
 
     # st.markdown('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.sidebar.markdown("")
@@ -377,7 +405,7 @@ def ui(model, session, sentok, ui_labels):
     elif page == 'About':
         page_about()
 
-    hide_hamburger_menu()
+    hide_hamburger_and_footer()
     show_biu_logo()
 
 
