@@ -323,6 +323,17 @@ def page_home(model, session, sentok, ui_labels):
         show_results(model, session, sentok, ui_labels, sentence, log_sentence=log_sentence)
 
 
+def show_arch_image():
+    st.markdown("""<style> .fullScreenFrame > div {
+                    display: flex;
+                    justify-content: center;
+                    } </style>""", unsafe_allow_html=True)
+    image = Image.open('arch.png')
+    size = 500, 500
+    image.thumbnail(size, Image.ANTIALIAS)
+    st.image(image)
+
+
 def page_about():
     st.title('About ***heMoji***')
     st.write(
@@ -339,6 +350,8 @@ def page_about():
              u'\U0001f44b', u'\U0001f64a', u'\U0001f44d', u'\U0001f44c', u'\U0001f64f', u'\U0001f64c', u'\U0001f48b',
              u'\U0001f44f', u'\U0001f525', u'\U0001f44e', u'\u2665', u'\u2764', u'\U0001f4aa', u'\U0001f615',
              u'\U0001f494')
+
+    show_arch_image()
 
 
 def hide_hamburger_and_footer():
