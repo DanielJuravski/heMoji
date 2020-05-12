@@ -414,7 +414,7 @@ def show_biu_logo():
         background-color: #ffffff;
         background-repeat: no-repeat;
         font-size: 0px;
-        padding: 50px;
+        padding: 60px;
         top: 10px;
         bottom: 0px;
         position: sticky;
