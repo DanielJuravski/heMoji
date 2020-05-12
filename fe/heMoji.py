@@ -337,9 +337,14 @@ def show_arch_image():
 def page_about():
     st.title('About ***heMoji***')
     st.write(
-        "The ***heMoji*** model is based on the wonderful deepMoji (Felbo et al., 2017). It is about time to get some emoji predictions over Hebrew text!")
-    st.write(
-        "The model was trained over millions of tweets that were composed out of Hebrew sentences and included at least one of following 64 predictable emojis:")
+        "The ***heMoji*** model is based on the wonderful deepMoji (Felbo et al., 2017)"
+        "$^1$.",
+        "It is about time to get some emoji predictions over Hebrew text!")
+    st.write("We teach our model an understanding of emotions by finding millions of tweets"
+             "(that were composed out of Hebrew sentences) containing one of the top 64 emojis below and"
+             "ask the model to predict them in context. "
+             "Just by examining the predictions of our model on the test set it is clear that the model does have an"
+             "understanding of how the emojis are related.")
     st.write(u'\U0001f601', u'\U0001f602', u'\U0001f605', u'\U0001f604', u'\U0001f607', u'\U0001f609', u'\U0001f608',
              u'\U0001f60b', u'\U0001f60a', u'\U0001f60d', u'\U0001f60c', u'\U0001f60f', u'\U0001f60e', u'\U0001f611',
              u'\U0001f610', u'\U0001f613', u'\U0001f612', u'\U0001f495', u'\U0001f614', u'\U0001f497', u'\U0001f616',
@@ -351,7 +356,36 @@ def page_about():
              u'\U0001f44f', u'\U0001f525', u'\U0001f44e', u'\u2665', u'\u2764', u'\U0001f4aa', u'\U0001f615',
              u'\U0001f494')
 
+    st.write("We want to make it easy for others to use our model for any imaginable purpose without any installation "
+             "pre-requirements. That's why we release a dockerised ", ":whale: ", "image of our code for preprocessing "
+             "and an easy-to-use pretrained model for use with the Keras framework."
+             "It will soon be available on github.")
+
+    st.write("Let's look at the heMoji model. "
+             "It is a fairly standard and robust NLP neural net with two bi-LSTM layers followed by "
+             "an attention layer and a softmax layer:")
     show_arch_image()
+
+    text = """<p>In addition to the powerful ability to predict the corresponded emoji with given the input text, the
+             model can be used for transfer learning. We used the Amram et al., (2018)<sup>2</sup>
+             dataset and benchmark (<span style="color: orange">89.20%</span>) and finetuned the model over that data.
+             Using the 'chain-thaw' fine-tuning procedure, which iteratively unfreezes part of the network and trains it 
+             (the procedure starts by training any new layers, then fine-tunes the first layer to the last layer 
+             individually and then finally trains the entire model) we achieved accuracy of 
+             <span style="color: green">92.85%</span>.</p>"""
+    st.write(text, unsafe_allow_html=True)
+
+    # ref.
+    st.markdown("---")
+    st.write("")
+    text = """<p>[1] <span style="font-size: 12px">Felbo, B., Mislove, A., Sogaard, A., Rahwan, I., & Lehmann, S. (2017). 
+    Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and 
+    sarcasm. arXiv preprint arXiv:1708.00524.</span><br>
+    [2] <span style="font-size: 12px">Amram, A., David, A. B., & Tsarfaty, R. (2018, August). 
+    Representations and Architectures in Neural Sentiment Analysis for Morphologically Rich Languages: 
+    A Case Study from Modern Hebrew. 
+    In Proceedings of the 27th International Conference on Computational Linguistics (pp. 2242-2252).</span></p>"""
+    st.write(text, unsafe_allow_html=True)
 
 
 def hide_hamburger_and_footer():
@@ -390,13 +424,11 @@ def show_biu_logo():
         font-size: 0px;
         padding: 50px;
         top: 10px;
-        bottom: 10px;
+        bottom: 0px;
         position: sticky;
     }
     """ % (image_formatter)
     st.markdown(footer, unsafe_allow_html=True)
-
-
 
 
 def side_bar():
