@@ -152,22 +152,14 @@ def use_example_sentence(w_example_sentence, ui_labels):
 
     # selectbox label
     if LANG == 'he':
-        st.markdown("""<style> .stSelectbox {direction: RTL; text-align: right;}</style>""", unsafe_allow_html=True)
         selectbox_label = ui_labels['he']['examples_sents']
+        st.markdown("""<style> .stSelectbox {direction: RTL; text-align: right;}</style>""", unsafe_allow_html=True)
     elif LANG == 'en':
         selectbox_label = ui_labels['en']['examples_sents']
+        st.markdown("""<style> .stSelectbox {direction: RTL; }</style>""", unsafe_allow_html=True)
 
     # set the options in the drop-down list R2L
     st.markdown("""<style>div[role="listbox"] ul {direction: RTL; text-align: right;} </style>""", unsafe_allow_html=True)
-
-    # set selectbox location to the right
-    # st.markdown("""<style>
-    #             .stSelectbox  {
-    #                 direction: RTL;
-    #                 text-align: right;
-    #                 } </style>""", unsafe_allow_html=True)
-
-
 
     selected = w_example_sentence.selectbox(selectbox_label, options=options)
 

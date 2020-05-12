@@ -16,7 +16,7 @@
         "sub_title": "***heMoji*** will try to detect the sentiment, emotion and sarcasm of your Hebrew sentence and predict the correspond emoji for it",
 
         "text_input": "Insert Hebrew sentence:",
-        "examples_sents": "Or choose any example sentence below:",
+        "examples_sents": "Or choose any example sentence below",
 
         "table_label": "Predicted emojis:",
         "table_emoji": "emoji",
