@@ -255,12 +255,10 @@ def show_title(ui_labels):
         title = """<style> he_h1 {
                         direction: RTL; text-align: right;
                         display: block;
-                        font-size: 2em;
-                        margin-top: 0.67em;
-                        margin-bottom: 0.67em;
-                        margin-left: 0;
-                        margin-right: 0;
-                        font-weight: bold;
+                        font-size: 36px;
+                        margin: 8px 0px;
+                        padding: 18px 0px 9px;
+                        color: #262730;
                         } </style> <he_h1>%s</he_h1>""" % (ui_labels['he']['title'])
         st.markdown(title, unsafe_allow_html=True)
     elif LANG == 'en':
