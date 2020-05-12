@@ -425,11 +425,20 @@ def show_biu_logo():
 
 def side_bar():
     st.sidebar.title('***heMoji***')
-    side_bar_str = st.sidebar.radio('Page:', ('Home', 'About'))
+    # side_bar_str = st.sidebar.radio('Page:', ('Home', 'About'))
+    side_bar_str = 'Home'
+    st.sidebar.markdown("")
+    side_bar_home_page = st.sidebar.button('Home')
+    side_bar_about_page = st.sidebar.button('About')
+
+    if side_bar_home_page == True:
+        side_bar_str = 'Home'
+    elif side_bar_about_page == True:
+        side_bar_str = 'About'
 
     st.sidebar.markdown("---")
 
-    # st.markdown('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    st.markdown('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.sidebar.markdown("")
     global LANG
     LANG = st.sidebar.radio('Language:', ('en', 'he'))
