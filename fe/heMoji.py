@@ -385,15 +385,18 @@ def show_biu_logo():
     <style>
     .reportview-container .main footer {
         background-image: url(%s);
+        background-color: #ffffff;
         background-repeat: no-repeat;
         font-size: 0px;
-        padding: 60px;
+        padding: 50px;
         top: 10px;
         bottom: 10px;
         position: sticky;
     }
     """ % (image_formatter)
     st.markdown(footer, unsafe_allow_html=True)
+
+
 
 
 def side_bar():
