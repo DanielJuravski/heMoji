@@ -32,7 +32,7 @@ TOP_E = 5  # len(e2l)
 HOME = expanduser("~")
 LOGGER_PATH = HOME + '/emoji_predictor.log'
 global LANG  # he/en
-LANG = 'en'  # he/en
+LANG = 'he'  # he/en
 
 
 def load_ui_labels():
@@ -250,7 +250,7 @@ def is_sentence_valid(w_input_sentence_warning, sentence):
     return to_predict
 
 
-def show_title(ui_labels):
+def show_title(ui_labels, key):
     if LANG == 'he':
         title = """<style> he_h1 {
                         direction: RTL; text-align: right;
@@ -259,10 +259,10 @@ def show_title(ui_labels):
                         margin: 8px 0px;
                         padding: 18px 0px 9px;
                         color: #262730;
-                        } </style> <he_h1>%s</he_h1>""" % (ui_labels['he']['title'])
+                        } </style> <he_h1>%s</he_h1>""" % (ui_labels['he'][key])
         st.markdown(title, unsafe_allow_html=True)
     elif LANG == 'en':
-        st.title(ui_labels['en']['title'])
+        st.title(ui_labels['en'][key])
 
 
 def show_sub_title(ui_labels):
@@ -287,7 +287,7 @@ def input_sentence(w_input_sentence_text, example_sentence_str, ui_labels):
 def page_home(model, session, sentok, ui_labels):
     st.balloons()
 
-    show_title(ui_labels)
+    show_title(ui_labels, 'title')
     show_sub_title(ui_labels)
 
     # user input sentence place holder
@@ -324,17 +324,13 @@ def show_arch_image():
     st.image(image)
 
 
-def page_about():
-    st.title('About ***heMoji***')
-    st.write(
-        "The ***heMoji*** model is based on the wonderful deepMoji (Felbo et al., 2017)"
-        "$^1$.",
-        "It is about time to get some emoji predictions over Hebrew text!")
-    st.write("We teach our model an understanding of emotions by finding millions of tweets"
-             "(that were composed out of Hebrew sentences) containing one of the top 64 emojis below and"
-             "ask the model to predict them in context. "
-             "Just by examining the predictions of our model on the test set it is clear that the model does have an"
-             "understanding of how the emojis are related.")
+def page_about(ui_labels):
+    show_title(ui_labels, 'page_about_title')
+
+    if LANG == 'he':
+        st.markdown("""<style> p {direction: RTL; text-align: right;}</style>""", unsafe_allow_html=True)
+
+    st.write(ui_labels[LANG]['about01'], unsafe_allow_html=True)
     st.write(u'\U0001f601', u'\U0001f602', u'\U0001f605', u'\U0001f604', u'\U0001f607', u'\U0001f609', u'\U0001f608',
              u'\U0001f60b', u'\U0001f60a', u'\U0001f60d', u'\U0001f60c', u'\U0001f60f', u'\U0001f60e', u'\U0001f611',
              u'\U0001f610', u'\U0001f613', u'\U0001f612', u'\U0001f495', u'\U0001f614', u'\U0001f497', u'\U0001f616',
@@ -345,35 +341,19 @@ def page_about():
              u'\U0001f44b', u'\U0001f64a', u'\U0001f44d', u'\U0001f44c', u'\U0001f64f', u'\U0001f64c', u'\U0001f48b',
              u'\U0001f44f', u'\U0001f525', u'\U0001f44e', u'\u2665', u'\u2764', u'\U0001f4aa', u'\U0001f615',
              u'\U0001f494')
-
-    st.write("We want to make it easy for others to use our model for any imaginable purpose without any installation "
-             "pre-requirements. That's why we release a dockerised ", ":whale: ", "image of our code for preprocessing "
-             "and an easy-to-use pretrained model for use with the Keras framework."
-             "It will soon be available on github.")
-
-    st.write("Let's look at the heMoji model. "
-             "It is a fairly standard and robust NLP neural net with two bi-LSTM layers followed by "
-             "an attention layer and a softmax layer:")
+    st.write(ui_labels[LANG]['about02'], unsafe_allow_html=True)
     show_arch_image()
-
-    text = """<p>In addition to the powerful ability to predict the corresponded emoji with given the input text, the
-             model can be used for transfer learning. We used the Amram et al., (2018)<sup>2</sup>
-             dataset and benchmark (<span style="color: orange">89.20%</span>) and finetuned the model over that data.
-             Using the 'chain-thaw' fine-tuning procedure, which iteratively unfreezes part of the network and trains it 
-             (the procedure starts by training any new layers, then fine-tunes the first layer to the last layer 
-             individually and then finally trains the entire model) we achieved accuracy of 
-             <span style="color: green">92.85%</span>.</p>"""
-    st.write(text, unsafe_allow_html=True)
+    st.write(ui_labels[LANG]['about03'], unsafe_allow_html=True)
 
     # ref.
     st.markdown("---")
     st.write("")
-    text = """<p>[1] <span style="font-size: 12px">Felbo, B., Mislove, A., Sogaard, A., Rahwan, I., & Lehmann, S. (2017). 
-    Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and 
+    text = """<p>[1] <span style="font-size: 12px">Felbo, B., Mislove, A., Sogaard, A., Rahwan, I., & Lehmann, S. (2017).
+    Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and
     sarcasm. arXiv preprint arXiv:1708.00524.</span><br>
-    [2] <span style="font-size: 12px">Amram, A., David, A. B., & Tsarfaty, R. (2018, August). 
-    Representations and Architectures in Neural Sentiment Analysis for Morphologically Rich Languages: 
-    A Case Study from Modern Hebrew. 
+    [2] <span style="font-size: 12px">Amram, A., David, A. B., & Tsarfaty, R. (2018, August).
+    Representations and Architectures in Neural Sentiment Analysis for Morphologically Rich Languages:
+    A Case Study from Modern Hebrew.
     In Proceedings of the 27th International Conference on Computational Linguistics (pp. 2242-2252).</span></p>"""
     st.write(text, unsafe_allow_html=True)
 
@@ -412,45 +392,60 @@ def show_biu_logo():
         background-color: #ffffff;
         background-repeat: no-repeat;
         font-size: 0px;
-        padding: 60px;
-        top: 10px;
+        padding: 55px;
         bottom: 0px;
         position: sticky;
+        border-top: 5px solid #ffffff;
     }
     """ % (image_formatter)
     st.markdown(footer, unsafe_allow_html=True)
 
 
-def side_bar():
-    st.sidebar.title('***heMoji***')
-    # side_bar_str = st.sidebar.radio('Page:', ('Home', 'About'))
+def side_bar(ui_labels):
+    global LANG
     side_bar_str = 'Home'
+
+    side_bar_title = st.sidebar.empty()
     st.sidebar.markdown("")
-    side_bar_home_page = st.sidebar.button('Home')
-    side_bar_about_page = st.sidebar.button('About')
-
-    if side_bar_home_page == True:
-        side_bar_str = 'Home'
-    elif side_bar_about_page == True:
-        side_bar_str = 'About'
-
+    side_bar_home_page = st.sidebar.empty()
+    side_bar_about_page = st.sidebar.empty()
     st.sidebar.markdown("---")
-
     st.markdown('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.sidebar.markdown("")
-    global LANG
-    LANG = st.sidebar.radio('Language:', ('en', 'he'))
+    LANG = st.sidebar.radio('Language:', ('he', 'en'))
+
+    if LANG == 'he':
+        st.markdown("""<style> .stButton {direction: RTL; text-align: right;}</style>""", unsafe_allow_html=True)
+        title = """<style> he_side_h1 {
+                        direction: RTL; text-align: right;
+                        display: block;
+                        font-size: 24px;
+                        margin: 8px 0px;
+                        padding: 18px 0px 9px;
+                        color: #262730;
+                        } </style> <he_side_h1>%s</he_side_h1>""" % (ui_labels['he']['sb_title'])
+        side_bar_title.markdown(title, unsafe_allow_html=True)
+    elif LANG == 'en':
+        side_bar_title.title(ui_labels['en']['sb_title'])
+
+    home_page = side_bar_home_page.button(ui_labels[LANG]['sb_home_page'])
+    about_page = side_bar_about_page.button(ui_labels[LANG]['sb_about_page'])
+
+    if home_page == True:
+        side_bar_str = 'Home'
+    elif about_page == True:
+        side_bar_str = 'About'
 
     return side_bar_str
 
 
 def ui(model, session, sentok, ui_labels):
-    page = side_bar()
+    page = side_bar(ui_labels)
 
     if page == 'Home':
         page_home(model, session, sentok, ui_labels)
     elif page == 'About':
-        page_about()
+        page_about(ui_labels)
 
     hide_hamburger_and_footer()
     show_biu_logo()
