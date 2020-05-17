@@ -1,27 +1,26 @@
 FROM ubuntu:18.04
 MAINTAINER Daniel Juravski
 
-#RUN mkdir -p /root/heMoji/model
-COPY docker/ heMoji/
-COPY setup.py heMoji/
-COPY lib/ heMoji/lib/
-COPY src/ heMoji/src/
+
+RUN mkdir -p /root/heMoji/
+WORKDIR /root/heMoji/
+
+COPY docker/ .
+COPY setup.py .
+COPY lib/ lib/
+COPY src/ src/
+COPY datasets/he_sentiment_twitter/token_data.pkl datasets/he_sentiment_twitter/morph_data.pkl data/amram_2017/
+RUN mv examples.txt data/
+RUN mv sentiment_model.hdf5 data/amram_2017/model.hdf5
+RUN mv sentiment_examples.txt data/amram_2017/examples.txt
 
 
 RUN apt-get update && apt-get install -y python2.7 python-pip nano
-RUN cd heMoji && pip install -e .
-
-
+RUN pip install -e .
 
 
 ADD docker/README.sh /usr/local/bin
-RUN chmod +x /usr/local/bin/README.sh
-RUN echo "sh /usr/local/bin/README.sh" >> /root/.bashrc
-
+RUN echo "/usr/local/bin/README.sh" >> /root/.bashrc
 
 
 ENTRYPOINT /bin/bash
-
-
-# use setup in the root dir
-# set ENTRYPOINT to cd /heMoji

@@ -10,6 +10,11 @@ from lib.sentence_tokenizer import SentenceTokenizer
 from src.emoji2label import data01e2l as e2l
 from src.emoji2label import l2edata01 as l2e
 
+DATA_PATH = '/root/heMoji/data/examples.txt'
+LOGS_DIR = '/root/heMoji/data/'
+PRETRAINED_PATH = '/root/heMoji/model/model.hdf5'
+VOCAB_PATH = '/root/heMoji/model/vocab.json'
+
 
 def encode_input_sentence(sentok, input_sentence):
     # encode sentence to tokens
@@ -25,25 +30,36 @@ def encode_input_sentence(sentok, input_sentence):
 
 
 if __name__ == '__main__':
+    if '--data' in sys.argv:
+        option_i = sys.argv.index('--data')
+        data_path = sys.argv[option_i + 1]
+    else:
+        data_path = DATA_PATH
+
+    if '--out' in sys.argv:
+        option_i = sys.argv.index('--out')
+        out_path = sys.argv[option_i + 1]
+    else:
+        out_path = LOGS_DIR
+
     print("Loading model ...")
-    with open('/heMoji/model/vocab.json', 'r') as f:
-    # with open('/home/daniel/heMoji/data/vocab_500G_rare5_data01.json', 'r') as f:
+    with open(VOCAB_PATH, 'r') as f:
         vocab = json.load(f)
 
     sentok = SentenceTokenizer(vocab, prod=True, wanted_emojis=e2l, uint=32)
 
-    model = load_model('/heMoji/model/model.hdf5',
-    # model = load_model('/home/daniel/Downloads/500G_data01-100K_128_80_rare5_De05_Df05_epochs10_generatorBatch_cce.hdf5',
-                       custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
+    model = load_model(PRETRAINED_PATH, custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
 
-    with open('/data/predict/sents.txt', 'r') as f:
-    # with open('sents.txt', 'r') as f:
+    with open(DATA_PATH, 'r') as f:
+        print("Loading text data from {} ...".format(DATA_PATH))
+
         full_out = []
         short_out = []
         lines = f.readlines()
         n_sents = len(lines)
         for i, line in enumerate(lines):
-            print("Predicting ... ({0}/{1})".format(i, n_sents))
+            sys.stdout.flush()
+            sys.stdout.write("Predicting ... {0}/{1} ({2}%)\r".format(i, n_sents, round((i * 1.0 / n_sents) * 100, 2)))
             line = line.strip()
             tokens = encode_input_sentence(sentok, input_sentence=line)
             if tokens is not None:
@@ -65,19 +81,21 @@ if __name__ == '__main__':
                                  'emojis': 'N/A',
                                  'probs': 'N/A'})
                 short_out.append((line, 'N/A'))
+    print("Predicting ... {0}/{1} ({2}%)\r".format(n_sents, n_sents, round((n_sents * 1.0 / n_sents) * 100, 2)))
 
-    print("Dumping results ...")
+    print("Dumping results to {} ...".format(LOGS_DIR))
 
     # full out
-    with open('/data/predict/out.json', 'w') as f:
-    # with open('out.json', 'w') as f:
+    with open(LOGS_DIR + 'out.json', 'w') as f:
         json.dump(full_out, f, indent=0)
 
     # short out
-    with open('/data/predict/out.txt', 'w') as f:
-    # with open('out.txt', 'w') as f:
+    with open(LOGS_DIR + 'out.txt', 'w') as f:
         for i in short_out:
             emojis = "".join([e for e in i[1]])
             f.writelines("{0}: {1}\n".format(i[0], emojis))
+
+    print("Successfully Done !")
+
 
 

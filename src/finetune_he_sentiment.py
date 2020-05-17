@@ -12,25 +12,27 @@ from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
 
 
-# DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
-DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
+DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
+# DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
 PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
 EPOCHS = 1
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
-TRANSFER = 'add-last'
+TRANSFER = 'chain-thaw'
 
-nb_classes = 3
 TIMES = dict()
 
 
-def get_args():
+def get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSFER):
     params = dict()
 
     if '--logs_dir' in sys.argv:
         option_i = sys.argv.index('--logs_dir')
+        logs_dir = sys.argv[option_i + 1]
+    elif '--out' in sys.argv:
+        option_i = sys.argv.index('--out')
         logs_dir = sys.argv[option_i + 1]
     else:
         logs_dir = LOGS_DIR
@@ -175,6 +177,16 @@ def init_hemoji_architecture(nb_classes, data, params, nb_tokens):
     return model
 
 
+def get_nb_classes(data):
+    nb_0 = len(np.unique(data['labels'][0]))
+    nb_1 = len(np.unique(data['labels'][1]))
+    nb_2 = len(np.unique(data['labels'][2]))
+
+    nb = np.max((nb_0, nb_1, nb_2))
+
+    return nb
+
+
 def main(params):
     with open(params['vocab_path'], 'r') as f:
         vocab = json.load(f)
@@ -182,6 +194,7 @@ def main(params):
 
     # Load dataset.
     data = load_benchmark(params['data_path'], vocab, vocab_uint=32)
+    nb_classes = get_nb_classes(data)
 
     # count OOV
     # count_oov(data, vocab)
@@ -201,7 +214,7 @@ def main(params):
     # save model
     model_path = params["logs_dir"] + "model.hdf5"
     print("Saving model to: {0}".format(model_path))
-    model.save(model_path)
+    model.save(model_path, include_optimizer=True)
 
 
 if __name__ == '__main__':
@@ -232,5 +245,5 @@ if __name__ == '__main__':
     3) Train. 
     """
 
-    params = get_args()
+    params = get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSFER)
     main(params)
