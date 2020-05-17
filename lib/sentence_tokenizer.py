@@ -19,7 +19,7 @@ class SentenceTokenizer():
         The vocabulary can include Unicode tokens.
     """
 
-    def __init__(self, vocabulary, fixed_length, custom_wordgen=None,
+    def __init__(self, vocabulary, fixed_length=80, custom_wordgen=None,
                  ignore_sentences_with_only_custom=False, masking_value=None,
                  unknown_value=1, prod=False, pre_data=False, uint=16, wanted_emojis=None,
                  ignore_sentences_with_URL_mask=True):
