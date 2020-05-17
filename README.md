@@ -3,7 +3,6 @@
 ## Sentiment and emotion predictions using emojis for Hebrew text
 
 
-
 The heMoji system predicts Emojis for Hebrew text.
 
 It is about time to get some emoji predictions over Hebrew text! The heMoji system predicts emojis for Hebrew texts, and can be used as a basis for more targetted sentiment/emotion/sarcasm detection systems.
@@ -20,7 +19,6 @@ We trained the model by collecting a large sample of Hebrew tweets, each of them
 
 Beyond the ability to predict the corresponding emoji for the given the input text, the model works well as the basis for other sentiment prediction tasks, using transfer learning. We tested it on the Hebrew sentiment-classification corpus released by Amram et al. (2018)<sup>2</sup>. Previous best reported results on these datasets achieved sentiment prediction accuracy of <span style="color: orange">89.20%</span>. After fine-tuning the pre-trained heMoji model on sentiment data, the fine-tuned model achieves an accuracy of <span style="color: green">93.16%</span>.
 To get more technical, the model is a (by now fairly standard) neural natural language processing architecture: a token-level embedding layer followed by two bi-LSTM layers, an attention layer, and a softmax classification layer.
-
 
 ![](fe/arch.png)
 
