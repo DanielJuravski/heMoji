@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     model = load_model(PRETRAINED_PATH, custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
 
-    with open(DATA_PATH, 'r') as f:
+    with open(data_path, 'r') as f:
         print("Loading text data from {} ...".format(DATA_PATH))
 
         full_out = []
@@ -86,11 +86,11 @@ if __name__ == '__main__':
     print("Dumping results to {} ...".format(LOGS_DIR))
 
     # full out
-    with open(LOGS_DIR + 'out.json', 'w') as f:
+    with open(out_path + 'out.json', 'w') as f:
         json.dump(full_out, f, indent=0)
 
     # short out
-    with open(LOGS_DIR + 'out.txt', 'w') as f:
+    with open(out_path + 'out.txt', 'w') as f:
         for i in short_out:
             emojis = "".join([e for e in i[1]])
             f.writelines("{0}: {1}\n".format(i[0], emojis))

@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     sentok = SentenceTokenizer(vocab, prod=True, wanted_emojis=e2l, uint=32, fixed_length=model.input_shape[1])
 
-    with open(DATA_PATH, 'r') as f:
+    with open(data_path, 'r') as f:
         print("Loading text data from {} ...".format(DATA_PATH))
 
         full_out = []
@@ -88,11 +88,11 @@ if __name__ == '__main__':
     print("Dumping results to {} ...".format(LOGS_DIR))
 
     # full out
-    with open(LOGS_DIR + 'out.json', 'w') as f:
+    with open(out_path + 'out.json', 'w') as f:
         json.dump(full_out, f, indent=0)
 
     # short out
-    with open(LOGS_DIR + 'out.txt', 'w') as f:
+    with open(out_path + 'out.txt', 'w') as f:
         for i in short_out:
             f.writelines("{0}: {1}\n".format(i[0], i[1]))
 
