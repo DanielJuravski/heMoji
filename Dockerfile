@@ -1,5 +1,5 @@
 FROM ubuntu:18.04
-MAINTAINER Daniel Juravski
+LABEL maintainer="Daniel Juravski"
 
 
 RUN mkdir -p /root/heMoji/
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y python2.7 python-pip nano
 RUN pip install -e .
 
 
-ADD docker/README.sh /usr/local/bin
+RUN mv README.sh /usr/local/bin/
 RUN echo "/usr/local/bin/README.sh" >> /root/.bashrc
 
 
