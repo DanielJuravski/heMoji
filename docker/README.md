@@ -37,7 +37,7 @@ Run `exit` to exit the container (in the above way of execution, it will automat
 
 
 
-# Advanced setup
+# Advanced Setup
 You'll probobly would like to use the model to analyse/fine-tune your own data (saying it is in your  `my_data` dir).
 
 Run a container of above image:
@@ -56,7 +56,7 @@ In any time you can detach out of your container by `CTRL P + Q` and attach it b
 ## Emoji Predict
 Predicting emojis for given a text:
 
-    python emojis_predict.py --data my_data/data.txt --out my_data/
+    python emojis_predict.py --data /my_data/data.txt --out /my_data/
     
 Where:
 - `--data` Hebrew sentences file path.
@@ -71,7 +71,7 @@ Will predict the most suitable emojis for each line of text in the `my_data/data
 Beyond the ability to predict the corresponding emoji for a given input text, the model works well as the basis for other sentiment prediction tasks, using transfer learning.
 You can fine-tune the model over your data - you should have 3 tsv files (you may use `train.tsv`, `dev.tsv` and `test.tsv` files in `data/amram_2017/` dir as a refference to the desired structure):
 
-    python transfer_finetune.py --data my_data/ --out my_data/
+    python transfer_finetune.py --data /my_data/ --out /my_data/
 
 Where:
 - `--data` Data to finetune on pkl file path.
@@ -90,7 +90,7 @@ Will create a sentiment model based on your data (and labels). The fine-tuning p
 ## Transfer predict
 Afterwards you have fine-tuned the model based on your sentiment data, you'll probably want to use it to analyse and predict many others:
 
-    python transfer_predict.py --data my_data/data.txt --out my_data/ --model my_data/model.hdf5
+    python transfer_predict.py --data /my_data/data.txt --out /my_data/ --model /my_data/model.hdf5
 
 Where:
 - `--data` Hebrew sentences file path.
