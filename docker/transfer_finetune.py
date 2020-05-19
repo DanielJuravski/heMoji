@@ -31,5 +31,5 @@ if __name__ == '__main__':
 
     """
     params = get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSFER)
-    raw_to_pickle.process(DATASET_PATH)
+    raw_to_pickle.process(params['data_path'])
     main(params)
