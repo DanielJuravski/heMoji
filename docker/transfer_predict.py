@@ -56,7 +56,7 @@ if __name__ == '__main__':
     sentok = SentenceTokenizer(vocab, prod=True, wanted_emojis=e2l, uint=32, fixed_length=model.input_shape[1])
 
     with open(data_path, 'r') as f:
-        print("Loading text data from {} ...".format(DATA_PATH))
+        print("Loading text data from {} ...".format(data_path))
 
         full_out = []
         short_out = []
@@ -85,7 +85,7 @@ if __name__ == '__main__':
                 short_out.append((line, 'N/A'))
     print("Predicting ... {0}/{1} ({2}%)\r".format(n_sents, n_sents, round((n_sents * 1.0 / n_sents) * 100, 2)))
 
-    print("Dumping results to {} ...".format(LOGS_DIR))
+    print("Dumping results to {} ...".format(out_path))
 
     # full out
     with open(out_path + 'out.json', 'w') as f:
