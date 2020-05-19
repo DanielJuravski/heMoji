@@ -19,11 +19,13 @@ Predicting emojis for given a text:
     python emojis_predict.py
 Will predict the most suitable emojis for each line of text in the `data/examples.txt` file and dump the results to `data/out.txt` file.
 
-## Sentiment predict
-The above sentiment labels were trained over amram et al. (2017) dataset;
+## Sentiment Predict
+The below sentiment labels were trained over the Amram et al. (2017) dataset;
 
 > 0: Positive sentiment
+>
 > 1: Negative sentiment
+>
 > 2: Neutral sentiment
 
 Predicting sentiment for given a text:
@@ -65,9 +67,10 @@ Where:
 Will predict the most suitable emojis for each line of text in the `my_data/data.txt` file (you may use `data/examples.txt` file as a refference to text file) and dump the results to `my_data/` dir. The results are 2 files `out.txt` and `out.json`. 
 
 > `out.txt`: txt file, where each text is attached with the top 5 suitable emojis that were predicted. 
+>
 > `out.json`: json file, where each text is an instance of its' utf-8 decoded string, the 64 predicted emojis by their order and the prediction probability of each emoji.
 
-## Transfer fine-tuning
+## Transfer Fine-tuning
 Beyond the ability to predict the corresponding emoji for a given input text, the model works well as the basis for other sentiment prediction tasks, using transfer learning.
 You can fine-tune the model over your data - you should have 3 tsv files (you may use `train.tsv`, `dev.tsv` and `test.tsv` files in `data/amram_2017/` dir as a refference to the desired structure):
 
@@ -82,12 +85,15 @@ Where:
 Will create a sentiment model based on your data (and labels). The fine-tuning progress, logs and model will be dumped to `my_data/` dir.  The results and logs are 4 files `model.hdf5`, `stats.txt`, `acc.png` and `loss.png`. 
 
 > `model.hdf5`: fine-tuned model, can be used in the next phase.
+>
 > `stats.txt`: some stats including test acc result of the fine-tuning process.
+>
 > `acc.png`: train and dev data accuracy plot.
+>
 > `loss.png`: train and dev data loss plot.
 
 
-## Transfer predict
+## Transfer Predict
 Afterwards you have fine-tuned the model based on your sentiment data, you'll probably want to use it to analyse and predict many others:
 
     python transfer_predict.py --data /my_data/data.txt --out /my_data/ --model /my_data/model.hdf5
@@ -99,6 +105,7 @@ Where:
 
 Will load the model (that was trained in the **Transfer fine-tuning** phase ) and predict the sentiment lables for each line of text in the `my_data/data.txt` file and dump the results to `my_data/` dir. The results are 2 files `out.txt` and `out.json`. 
 > `out.txt`: txt file, where each text is attached with predicted sentiment label. 
+>
 > `out.json`: json file, where each text is an instance of its' utf-8 decoded string, the predicted sentiment labels by their order and the prediction probability of those labels.
 
 
