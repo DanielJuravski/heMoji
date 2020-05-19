@@ -9,7 +9,10 @@ COPY docker/ .
 COPY setup.py .
 COPY lib/ lib/
 COPY src/ src/
-COPY datasets/he_sentiment_twitter/token_data.pkl datasets/he_sentiment_twitter/morph_data.pkl data/amram_2017/
+COPY datasets/he_sentiment_twitter/token/train.tsv \
+    datasets/he_sentiment_twitter/token/dev.tsv \
+    datasets/he_sentiment_twitter/token/test.tsv \
+    data/amram_2017/
 RUN mv examples.txt data/
 RUN mv sentiment_model.hdf5 data/amram_2017/model.hdf5
 RUN mv sentiment_examples.txt data/amram_2017/examples.txt

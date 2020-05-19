@@ -1,6 +1,7 @@
 from src.finetune_he_sentiment import get_args, main
+from src import raw_to_pickle
 
-DATASET_PATH = '/root/heMoji/data/amram_2017/token_data.pkl'
+DATASET_PATH = '/root/heMoji/data/amram_2017/'
 LOGS_DIR = '/root/heMoji/data/amram_2017/'
 PRETRAINED_PATH = '/root/heMoji/model/model.h5'
 VOCAB_PATH = '/root/heMoji/model/vocab.json'
@@ -30,4 +31,5 @@ if __name__ == '__main__':
 
     """
     params = get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSFER)
+    raw_to_pickle.process(DATASET_PATH)
     main(params)

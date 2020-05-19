@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from lib.model_def import hemoji_transfer
 from lib.finetuning import load_benchmark, finetune
+from src import raw_to_pickle
 
 
 DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
@@ -96,7 +97,6 @@ def get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSF
         option_i = sys.argv.index('--transfer')
         transfer = sys.argv[option_i + 1]
     else:
-        print("[WARNING] using default --transfer value. You should pass it's value [last/chain-thaw]")
         transfer = TRANSFER
     params['transfer'] = transfer
 
@@ -193,7 +193,7 @@ def main(params):
         nb_tokens = len(vocab)
 
     # Load dataset.
-    data = load_benchmark(params['data_path'], vocab, vocab_uint=32)
+    data = load_benchmark(params['data_path']+'/data.pkl', vocab, vocab_uint=32)
     nb_classes = get_nb_classes(data)
 
     # count OOV
@@ -246,4 +246,5 @@ if __name__ == '__main__':
     """
 
     params = get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSFER)
+    raw_to_pickle.process(DATASET_PATH)
     main(params)
