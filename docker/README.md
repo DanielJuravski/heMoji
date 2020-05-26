@@ -11,7 +11,17 @@ Get the heMoji docker image (using the below cmd you'll get the latest image).
 Run a container of that image.
 
     docker run -it danieljuravski/hemoji
-You can now explore some of the functionallity of this container:
+>Docker runs processes in isolated containers. A container is a process which runs on a host. The host may be local or remote. When an operator executes docker run, the container process that runs is isolated in that it has its own file system, its own networking, and its own isolated process tree separate from the host.
+
+You will automatically tunnelled to the containers bash prompt - `home` dir (`/root/heMoji`).
+In this dir, you will find:
+- `README.md`: the present readme file
+- `model`: contains the vocab and the trained heMoji models
+- `data`: contains example text files and data-set
+- `lib`, `src`: contains core heMoji code
+- `emojis_predict.py`, `transfer_finetune.py` and `transfer_predict.py`: described below
+
+You can now explore some of the functionality of this container:
 
 ## Emoji Predict
 Predicting emojis for given a text:
@@ -50,6 +60,16 @@ where:
 - `-it` is for running the container in interactive mode and allocate a tty for it.
 - `--name` is for easy access for your container.
 -  `-v $(pwd)/my_data:/my_data` is for mounitng you local `my_data` dir into the container.
+
+You will automatically tunnelled to the containers bash prompt - `home` dir (`/root/heMoji`).
+In this dir, you will find:
+- `README.md`: the present readme file
+- `model`: contains the vocab and the trained heMoji models
+- `data`: contains example text files and data-set
+- `lib`, `src`: contains core heMoji code
+- `emojis_predict.py`, `transfer_finetune.py` and `transfer_predict.py`: described below
+
+Your volume will be attached to `/my_data/` path.
 
 In any time you can detach out of your container by `CTRL P + Q` and attach it back by `docker exec -it hemoji /bin/bash`.
 
