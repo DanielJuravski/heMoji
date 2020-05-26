@@ -64,20 +64,53 @@ Where:
 - `--data` Hebrew sentences file path.
 - `--out` Results dir path.
 
-Will predict the most suitable emojis for each line of text in the `my_data/data.txt` file (you may use `data/examples.txt` file as a refference to text file) and dump the results to `my_data/` dir. The results are 2 files `out.txt` and `out.json`. 
+Will predict the most suitable emojis for each line of text in the `my_data/data.txt` file and dump the results to `my_data/` dir. The results are 2 files `out.txt` and `out.json`. 
 
 > `out.txt`: txt file, where each text is attached with the top 5 suitable emojis that were predicted. 
 >
 > `out.json`: json file, where each text is an instance of its' utf-8 decoded string, the 64 predicted emojis by their order and the prediction probability of each emoji.
 
+`my_data/data.txt` format should be (you may use `data/examples.txt` file as a reference):
+```
+text_1
+text_2
+text_3
+```
+`my_data/out.txt` format is:
+```
+text_1: emoji_1_1 emoji_1_2 emoji_1_3 emoji_1_4 emoji_1_5
+text_2: emoji_2_1 emoji_2_2 emoji_2_3 emoji_2_4 emoji_2_5
+text_3: emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
+```
+`my_data/out.json` format is:
+```json
+[
+    {
+        "input": "text_1",
+        "emojis": "[emoji_1_1, ..., emoji_1_64]", 
+        "probs": "[probability to emoji_1_1, ..., probability to emoji_1_64]"
+    },
+    {
+        "input": "text_2",
+        "emojis": "[emoji_2_1, ..., emoji_2_64]", 
+        "probs": "[probability to emoji_2_1, ..., probability to emoji_2_64]"
+    },
+    {
+        "input": "text_3",
+        "emojis": "[emoji_3_1, ..., emoji_3_64]", 
+        "probs": "[probability to emoji_3_1, ..., probability to emoji_3_64]"
+    }
+]
+```
+
 ## Transfer Fine-tuning
 Beyond the ability to predict the corresponding emoji for a given input text, the model works well as the basis for other sentiment prediction tasks, using transfer learning.
-You can fine-tune the model over your data - you should have 3 tsv files (you may use `train.tsv`, `dev.tsv` and `test.tsv` files in `data/amram_2017/` dir as a refference to the desired structure):
+You can fine-tune the model over your data - you should have 3 tsv files (`train.tsv`, `dev.tsv` and `test.tsv`) in your `my_data` dir (format below).
 
     python transfer_finetune.py --data /my_data/ --out /my_data/
 
 Where:
-- `--data` Data to finetune on pkl file path.
+- `--data` Data (`train.tsv`, `dev.tsv` and `test.tsv`) dir path.
 - `--out` Results dir path.
 - `--epochs` Number of epochs of iterating the data.
 - `--gpu` GPU number to execute on.
@@ -92,7 +125,12 @@ Will create a sentiment model based on your data (and labels). The fine-tuning p
 >
 > `loss.png`: train and dev data loss plot.
 
-
+`train.tsv`, `dev.tsv` and `test.tsv` format should be (you may use `train.tsv`, `dev.tsv` and `test.tsv` files in `data/amram_2017/` dir as a reference for the desired structure):
+```tsv
+text_1[\t]label_x1
+text_2[\t]label_x2
+text_3[\t]label_x3
+```
 ## Transfer Predict
 Afterwards you have fine-tuned the model based on your sentiment data, you'll probably want to use it to analyse and predict many others:
 
@@ -108,6 +146,38 @@ Will load the model (that was trained in the **Transfer fine-tuning** phase ) an
 >
 > `out.json`: json file, where each text is an instance of its' utf-8 decoded string, the predicted sentiment labels by their order and the prediction probability of those labels.
 
+`my_data/data.txt` format should be (you may use `data/examples.txt` file as a reference):
+```
+text_1
+text_2
+text_3
+```
+`my_data/out.txt` format is:
+```
+text_1: label_1
+text_2: label_2
+text_3: label_3
+```
+`my_data/out.json` format is:
+```json
+[
+    {
+        "input": "text_1",
+        "labels": "[label_1_1, ..., label_1_n]", 
+        "probs": "[probability to label_1_1, ..., probability to label_1_n]"
+    },
+    {
+        "input": "text_2",
+        "labels": "[label_2_1, ..., label_2_n]", 
+        "probs": "[probability to label_2_1, ..., probability to label_2_n]"
+    },
+    {
+        "input": "text_3",
+        "labels": "[label_3_1, ..., label_3_n]", 
+        "probs": "[probability to label_3_1, ..., probability to label_3_n]"
+    }
+]
+```
 
 # Credit
 The heMoji project was developed by Daniel Juravski at the Bar-Ilan natural language processing lab, as part of a larger project on automatic analysis of text in psychotherapy sessions, in order to gain insights on the psychotherapy process (the project is supervised by Prof. Yoav Goldberg from the computer science department and Dr. Dana Atzil from the Psychology department).
