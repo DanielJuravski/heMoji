@@ -104,23 +104,9 @@ text_3: emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
 ```
 `my_data/out.json` format is:
 ```json
-[
-    {
-        "input": "text_1",
-        "emojis": "[emoji_1_1, ..., emoji_1_64]", 
-        "probs": "[probability to emoji_1_1, ..., probability to emoji_1_64]"
-    },
-    {
-        "input": "text_2",
-        "emojis": "[emoji_2_1, ..., emoji_2_64]", 
-        "probs": "[probability to emoji_2_1, ..., probability to emoji_2_64]"
-    },
-    {
-        "input": "text_3",
-        "emojis": "[emoji_3_1, ..., emoji_3_64]", 
-        "probs": "[probability to emoji_3_1, ..., probability to emoji_3_64]"
-    }
-]
+{"input": "text_1", "emojis": "[emoji_1_1, ..., emoji_1_64]", "probs": "[probability to emoji_1_1, ..., probability to emoji_1_64]"}
+{"input": "text_2", "emojis": "[emoji_2_1, ..., emoji_2_64]", "probs": "[probability to emoji_2_1, ..., probability to emoji_2_64]"}
+{"input": "text_3", "emojis": "[emoji_3_1, ..., emoji_3_64]", "probs": "[probability to emoji_3_1, ..., probability to emoji_3_64]"}
 ```
 
 ## Sentiment Fine-tuning
@@ -180,23 +166,9 @@ text_3: label_3
 ```
 `my_data/out.json` format is:
 ```json
-[
-    {
-        "input": "text_1",
-        "labels": "[label_1_1, ..., label_1_n]", 
-        "probs": "[probability to label_1_1, ..., probability to label_1_n]"
-    },
-    {
-        "input": "text_2",
-        "labels": "[label_2_1, ..., label_2_n]", 
-        "probs": "[probability to label_2_1, ..., probability to label_2_n]"
-    },
-    {
-        "input": "text_3",
-        "labels": "[label_3_1, ..., label_3_n]", 
-        "probs": "[probability to label_3_1, ..., probability to label_3_n]"
-    }
-]
+{"input": "text_1", "labels": "[label_1_1, ..., label_1_n]", "probs": "[probability to label_1_1, ..., probability to label_1_n]"}
+{"input": "text_2", "labels": "[label_2_1, ..., label_2_n]", "probs": "[probability to label_2_1, ..., probability to label_2_n]"}
+{"input": "text_3", "labels": "[label_3_1, ..., label_3_n]", "probs": "[probability to label_3_1, ..., probability to label_3_n]"}
 ```
 
 # Credit

@@ -41,6 +41,44 @@ def encode_input_sentence(sentok, input_sentence):
     return tokens
 
 
+def init_out_files(out_path):
+    # full out
+    with open(out_path + 'out.json', 'w') as f:
+        pass
+
+    # short out
+    with open(out_path + 'out.txt', 'w') as f:
+        pass
+
+
+def evaluate(model, tokens):
+    c_probs = model.predict(tokens)[0]
+    labels = np.argsort(c_probs)
+    labels = labels[::-1]
+    e_labels_reverse_probs = [c_probs[i] for i in labels]
+    c_highest = labels[0]
+
+    return labels, c_highest, e_labels_reverse_probs
+
+
+def dump_results(line, labels, labels_probs, c_highest):
+    full_out = ({'input': line,
+                 'emojis': str(labels),
+                 'probs': str(labels_probs), })
+
+    short_out = (line, c_highest)
+
+    # full out
+    with open(out_path + 'out.json', 'a') as f:
+        json.dump(full_out, f, indent=None)
+        f.writelines('\n')
+
+    # short out
+    with open(out_path + 'out.txt', 'a') as f:
+        emojis = "".join([e for e in short_out[1]])
+        f.writelines("{0}: {1}\n".format(short_out[0], emojis))
+
+
 if __name__ == '__main__':
     data_path, out_path, model_path = get_args()
 
@@ -52,11 +90,11 @@ if __name__ == '__main__':
 
     sentok = SentenceTokenizer(vocab, prod=True, wanted_emojis=e2l, uint=32, fixed_length=model.input_shape[1])
 
+    init_out_files(out_path)
+
     with open(data_path, 'r') as f:
         print("Predicting text data from {} ...".format(data_path))
 
-        full_out = []
-        short_out = []
         lines = f.readlines()
         n_sents = len(lines)
 
@@ -65,32 +103,12 @@ if __name__ == '__main__':
             line = line.strip()
             tokens = encode_input_sentence(sentok, input_sentence=line)
             if tokens is not None:
-                c_probs = model.predict(tokens)[0]
-                labels = np.argsort(c_probs)
-                labels = labels[::-1]
-                e_labels_reverse_probs = [c_probs[i] for i in labels]
-                c_highest = labels[0]
-
-                full_out.append({'input': line,
-                                 'labels': str(labels),
-                                 'probs': str(e_labels_reverse_probs)})
-                short_out.append((line, c_highest))
+                labels, c_highest, labels_probs = evaluate(model, tokens)
+                dump_results(line, labels, labels_probs, c_highest)
             else:
-                full_out.append({'input': line,
-                                 'emojis': 'N/A',
-                                 'probs': 'N/A'})
-                short_out.append((line, 'N/A'))
+                dump_results(line, 'N/A', 'N/A', 'N/A')
 
-    print("Dumping results to {} ...".format(out_path))
-
-    # full out
-    with open(out_path + 'out.json', 'w') as f:
-        json.dump(full_out, f, indent=0)
-
-    # short out
-    with open(out_path + 'out.txt', 'w') as f:
-        for i in short_out:
-            f.writelines("{0}: {1}\n".format(i[0], i[1]))
+    print("Results were dumped to {} ...".format(out_path))
 
     print("Successfully Done !")
 
