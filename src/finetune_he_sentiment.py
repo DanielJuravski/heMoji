@@ -4,6 +4,7 @@ import json
 import sys
 import numpy as np
 import datetime
+import argparse
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -13,92 +14,50 @@ from lib.finetuning import load_benchmark, finetune
 from src import raw_to_pickle
 
 
-DATASET_PATH = 'datasets/he_sentiment_twitter_tmp/data.pickle'
+DATASET_PATH = '/home/daniel/heMoji/datasets/he_sentiment_twitter/token/'
 # DATASET_PATH = 'datasets/he_sentiment_twitter/token_data.pkl'
 LOGS_DIR = '/home/daniel/heMoji/logs/finetune_he_sentiment_last/'
-PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-30K_128_80_rare5_De05_Df05_epochs30_generatorBatch_cce.h5'  # this should be a file that created with save_weights cmd
+PRETRAINED_PATH = '/home/daniel/heMoji/data/model.h5'  # this should be a file that created with save_weights cmd
 VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
 EPOCHS = 1
 EPOCH_SIZE = 100  # relevant when training via batch generator
 USE_BATCH_GENERATOR = False
 TRANSFER = 'chain-thaw'
+EARLY_STOP = False
 
 TIMES = dict()
 
 
 def get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSFER):
+    parser = argparse.ArgumentParser(description='Sentiment finetuning')
+    parser.add_argument('--data', type=str, required=False, default=DATASET_PATH, help='Data (train.tsv, dev.tsv and test.tsv) dir path')
+    parser.add_argument('--logs_dir', '--out', type=str, required=False, default=LOGS_DIR, help='Results dir path')
+    parser.add_argument('--epochs', type=int, required=False, default=EPOCHS, help='Number of epochs of iterating the data')
+    parser.add_argument('--gpu', type=str, required=False, default="-1", help='GPU number to execute on')
+
+    # dev args
+    parser_dev = argparse.ArgumentParser(description='Sentiment finetuning', add_help=False)
+    parser_dev.add_argument('--model', type=str, required=False, default=PRETRAINED_PATH)
+    parser_dev.add_argument('--vocab', type=str, required=False, default=VOCAB_PATH)
+    parser_dev.add_argument('--epoch_size', type=int, required=False, default=EPOCH_SIZE)
+    parser_dev.add_argument('--train_data_gen', dest='train_data_gen', action='store_true', default=USE_BATCH_GENERATOR)
+    parser_dev.add_argument('--early_stop', dest='early_stop', action='store_true', default=EARLY_STOP)
+    parser_dev.add_argument('--transfer', type=str, required=False, default=TRANSFER)
+
+    args = parser.parse_args()
+    args_dev = parser_dev.parse_args()
+
     params = dict()
-
-    if '--logs_dir' in sys.argv:
-        option_i = sys.argv.index('--logs_dir')
-        logs_dir = sys.argv[option_i + 1]
-    elif '--out' in sys.argv:
-        option_i = sys.argv.index('--out')
-        logs_dir = sys.argv[option_i + 1]
-    else:
-        logs_dir = LOGS_DIR
-    params['logs_dir'] = logs_dir
-
-    if '--data' in sys.argv:
-        option_i = sys.argv.index('--data')
-        data_path = sys.argv[option_i + 1]
-    else:
-        data_path = DATASET_PATH
-    params['data_path'] = data_path
-
-    if '--model' in sys.argv:
-        option_i = sys.argv.index('--model')
-        model_path = sys.argv[option_i + 1]
-    else:
-        model_path = PRETRAINED_PATH
-    params['model_path'] = model_path
-
-    if '--vocab' in sys.argv:
-        option_i = sys.argv.index('--vocab')
-        vocab_path = sys.argv[option_i + 1]
-    else:
-        vocab_path = VOCAB_PATH
-    params['vocab_path'] = vocab_path
-
-    if '--epochs' in sys.argv:
-        option_i = sys.argv.index('--epochs')
-        epochs = int(sys.argv[option_i + 1])
-    else:
-        epochs = EPOCHS
-    params['epochs'] = epochs
-
-    if '--epoch_size' in sys.argv:
-        option_i = sys.argv.index('--epoch_size')
-        epoch_size = int(sys.argv[option_i + 1])
-    else:
-        epoch_size = EPOCH_SIZE
-    params['epoch_size'] = epoch_size
-
-    if '--train_data_gen' in sys.argv:
-        train_data_gen = True
-    else:
-        train_data_gen= USE_BATCH_GENERATOR
-    params['train_data_gen'] = train_data_gen
-
-    if '--gpu' in sys.argv:
-        option_i = sys.argv.index('--gpu')
-        gpu = sys.argv[option_i + 1]
-    else:
-        gpu = "-1"
-    params['gpu'] = gpu
-
-    if '--early_stop' in sys.argv:
-        early_stop = True
-    else:
-        early_stop= False
-    params['early_stop'] = early_stop
-
-    if '--transfer' in sys.argv:
-        option_i = sys.argv.index('--transfer')
-        transfer = sys.argv[option_i + 1]
-    else:
-        transfer = TRANSFER
-    params['transfer'] = transfer
+    params['logs_dir'] = args.logs_dir
+    params['data_path'] = args.data
+    params['model_path'] = args_dev.model
+    params['vocab_path'] = args_dev.vocab
+    params['epochs'] = args.epochs
+    params['epoch_size'] = args_dev.epoch_size
+    params['train_data_gen'] = args_dev.train_data_gen
+    params['gpu'] = args.gpu
+    params['early_stop'] = args_dev.early_stop
+    params['transfer'] = args_dev.transfer
 
     print("params:")
     for k, v in params.items():

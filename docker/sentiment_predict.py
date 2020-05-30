@@ -2,6 +2,7 @@ import json
 from keras.models import load_model
 import numpy as np
 from tqdm import trange
+import argparse
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -14,6 +15,17 @@ DATA_PATH = '/root/heMoji/data/amram_2017/examples.txt'
 LOGS_DIR = '/root/heMoji/data/amram_2017/'
 MODEL_PATH = '/root/heMoji/data/amram_2017/model.hdf5'
 VOCAB_PATH = '/root/heMoji/model/vocab.json'
+
+
+def get_args():
+    parser = argparse.ArgumentParser(description='Sentiment Predictor')
+    parser.add_argument('--data', type=str, required=False, default=DATA_PATH, help='Hebrew sentences file path')
+    parser.add_argument('--out', type=str, required=False, default=LOGS_DIR, help='Results dir path')
+    parser.add_argument('--model', type=str, required=False, default=MODEL_PATH, help='Trained finetuned model path')
+
+    args = parser.parse_args()
+
+    return args.data, args.out, args.model
 
 
 def encode_input_sentence(sentok, input_sentence):
@@ -30,23 +42,7 @@ def encode_input_sentence(sentok, input_sentence):
 
 
 if __name__ == '__main__':
-    if '--data' in sys.argv:
-        option_i = sys.argv.index('--data')
-        data_path = sys.argv[option_i + 1]
-    else:
-        data_path = DATA_PATH
-
-    if '--out' in sys.argv:
-        option_i = sys.argv.index('--out')
-        out_path = sys.argv[option_i + 1]
-    else:
-        out_path = LOGS_DIR
-
-    if '--model' in sys.argv:
-        option_i = sys.argv.index('--model')
-        model_path = sys.argv[option_i + 1]
-    else:
-        model_path = MODEL_PATH
+    data_path, out_path, model_path = get_args()
 
     print("Loading model ...")
     with open(VOCAB_PATH, 'r') as f:
