@@ -15,5 +15,6 @@ setup(
         'scikit-learn==0.19.0',
         'tensorflow==1.4.1',
         'text-unidecode==1.0',
+        'tqdm==4.46.0',
     ],
 )

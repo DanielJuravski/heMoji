@@ -1,6 +1,7 @@
 import json
 from keras.models import load_model
 import numpy as np
+from tqdm import trange
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -51,15 +52,15 @@ if __name__ == '__main__':
     model = load_model(PRETRAINED_PATH, custom_objects={'AttentionWeightedAverage': AttentionWeightedAverage})
 
     with open(data_path, 'r') as f:
-        print("Loading text data from {} ...".format(data_path))
+        print("Predicting text data from {} ...".format(data_path))
 
         full_out = []
         short_out = []
         lines = f.readlines()
         n_sents = len(lines)
-        for i, line in enumerate(lines):
-            sys.stdout.flush()
-            sys.stdout.write("Predicting ... {0}/{1} ({2}%)\r".format(i, n_sents, round((i * 1.0 / n_sents) * 100, 2)))
+
+        for i in trange(n_sents):
+            line = lines[i]
             line = line.strip()
             tokens = encode_input_sentence(sentok, input_sentence=line)
             if tokens is not None:
@@ -81,7 +82,6 @@ if __name__ == '__main__':
                                  'emojis': 'N/A',
                                  'probs': 'N/A'})
                 short_out.append((line, 'N/A'))
-    print("Predicting ... {0}/{1} ({2}%)\r".format(n_sents, n_sents, round((n_sents * 1.0 / n_sents) * 100, 2)))
 
     print("Dumping results to {} ...".format(out_path))
 
