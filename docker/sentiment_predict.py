@@ -75,8 +75,7 @@ def dump_results(line, labels, labels_probs, c_highest):
 
     # short out
     with open(out_path + 'out.txt', 'a') as f:
-        emojis = "".join([e for e in short_out[1]])
-        f.writelines("{0}: {1}\n".format(short_out[0], emojis))
+        f.writelines("{0}: {1}\n".format(short_out[0], short_out[1]))
 
 
 if __name__ == '__main__':
@@ -108,7 +107,7 @@ if __name__ == '__main__':
             else:
                 dump_results(line, 'N/A', 'N/A', 'N/A')
 
-    print("Results were dumped to {} ...".format(out_path))
+    print("Results were dumped to {}".format(out_path))
 
     print("Successfully Done !")
 

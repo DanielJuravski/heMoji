@@ -118,7 +118,7 @@ if __name__ == '__main__':
             else:
                 dump_results(line, 'N/A', 'N/A', 'N/A')
 
-    print("Results were dumped to {} ...".format(out_path))
+    print("Results were dumped to {}".format(out_path))
 
     print("Successfully Done !")
 

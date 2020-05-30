@@ -44,20 +44,20 @@ def get_args(DATASET_PATH, LOGS_DIR, PRETRAINED_PATH, VOCAB_PATH, EPOCHS, TRANSF
     parser_dev.add_argument('--early_stop', dest='early_stop', action='store_true', default=EARLY_STOP)
     parser_dev.add_argument('--transfer', type=str, required=False, default=TRANSFER)
 
-    args = parser.parse_args()
-    args_dev = parser_dev.parse_args()
+    args = parser.parse_known_args()
+    args_dev = parser_dev.parse_known_args()
 
     params = dict()
-    params['logs_dir'] = args.logs_dir
-    params['data_path'] = args.data
-    params['model_path'] = args_dev.model
-    params['vocab_path'] = args_dev.vocab
-    params['epochs'] = args.epochs
-    params['epoch_size'] = args_dev.epoch_size
-    params['train_data_gen'] = args_dev.train_data_gen
-    params['gpu'] = args.gpu
-    params['early_stop'] = args_dev.early_stop
-    params['transfer'] = args_dev.transfer
+    params['logs_dir'] = args[0].logs_dir
+    params['data_path'] = args[0].data
+    params['model_path'] = args_dev[0].model
+    params['vocab_path'] = args_dev[0].vocab
+    params['epochs'] = args[0].epochs
+    params['epoch_size'] = args_dev[0].epoch_size
+    params['train_data_gen'] = args_dev[0].train_data_gen
+    params['gpu'] = args[0].gpu
+    params['early_stop'] = args_dev[0].early_stop
+    params['transfer'] = args_dev[0].transfer
 
     print("params:")
     for k, v in params.items():
