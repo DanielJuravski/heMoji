@@ -18,29 +18,6 @@ PRETRAINED_PATH = '/root/heMoji/model/model.hdf5'
 VOCAB_PATH = '/root/heMoji/model/vocab.json'
 
 
-
-
-
-
-
-
-
-
-
-PRETRAINED_PATH = '/home/daniel/heMoji/data/500G_data01-100K_128_80_rare5_De05_Df05_epochs10_generatorBatch_cce.hdf5'
-VOCAB_PATH = '/home/daniel/heMoji/data/vocab_500G_rare5_data01.json'
-
-
-
-
-
-
-
-
-
-
-
-
 def get_args():
     parser = argparse.ArgumentParser(description='heMoji Predictor')
     parser.add_argument('--data', type=str, required=False, default=DATA_PATH, help='Hebrew sentences file path')
