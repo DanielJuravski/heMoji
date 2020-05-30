@@ -19,14 +19,14 @@ In this dir, you will find:
 - `model`: contains the vocab and the trained heMoji models
 - `data`: contains example text files and data-set
 - `lib`, `src`: contains core heMoji code
-- `emojis_predict.py`, `transfer_finetune.py` and `transfer_predict.py`: described below
+- `hemoji_predict.py`, `sentiment_finetune.py` and `sentiment_predict.py`: described below
 
 You can now explore some of the functionality of this container:
 
 ## Emoji Predict
 Predicting emojis for given a text:
 
-    python emojis_predict.py
+    python hemoji_predict.py
 Will predict the most suitable emojis for each line of text in the `data/examples.txt` file and dump the results to `data/out.txt` file.
 
 ## Sentiment Predict
@@ -40,7 +40,7 @@ The below sentiment labels were trained over the Amram et al. (2017) dataset;
 
 Predicting sentiment for given a text:
 
-    python transfer_predict.py
+    python sentiment_predict.py
 
 Will predict the sentiment of each line of text in the `data/amram_2017/examples.txt` file and dump the results to `data/amram_2017/out.txt` file.
 
@@ -67,7 +67,7 @@ In this dir, you will find:
 - `model`: contains the vocab and the trained heMoji models
 - `data`: contains example text files and data-set
 - `lib`, `src`: contains core heMoji code
-- `emojis_predict.py`, `transfer_finetune.py` and `transfer_predict.py`: described below
+- `hemoji_predict.py`, `sentiment_finetune.py` and `sentiment_predict.py`: described below
 
 Your volume will be attached to `/my_data/` path.
 
@@ -78,7 +78,7 @@ In any time you can detach out of your container by `CTRL P + Q` and attach it b
 ## Emoji Predict
 Predicting emojis for given a text:
 
-    python emojis_predict.py --data /my_data/data.txt --out /my_data/
+    python hemoji_predict.py --data /my_data/data.txt --out /my_data/
     
 Where:
 - `--data` Hebrew sentences file path.
@@ -123,11 +123,11 @@ text_3: emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
 ]
 ```
 
-## Transfer Fine-tuning
+## Sentiment Fine-tuning
 Beyond the ability to predict the corresponding emoji for a given input text, the model works well as the basis for other sentiment prediction tasks, using transfer learning.
 You can fine-tune the model over your data - you should have 3 tsv files (`train.tsv`, `dev.tsv` and `test.tsv`) in your `my_data` dir (format below).
 
-    python transfer_finetune.py --data /my_data/ --out /my_data/
+    python sentiment_finetune.py --data /my_data/ --out /my_data/
 
 Where:
 - `--data` Data (`train.tsv`, `dev.tsv` and `test.tsv`) dir path.
@@ -151,17 +151,17 @@ text_1[\t]label_x1
 text_2[\t]label_x2
 text_3[\t]label_x3
 ```
-## Transfer Predict
+## Sentiment Predict
 Afterwards you have fine-tuned the model based on your sentiment data, you'll probably want to use it to analyse and predict many others:
 
-    python transfer_predict.py --data /my_data/data.txt --out /my_data/ --model /my_data/model.hdf5
+    python sentiment_predict.py --data /my_data/data.txt --out /my_data/ --model /my_data/model.hdf5
 
 Where:
 - `--data` Hebrew sentences file path.
 - `--out` Results dir path.
 - `--model` Trained finetuned model path.
 
-Will load the model (that was trained in the **Transfer fine-tuning** phase ) and predict the sentiment lables for each line of text in the `my_data/data.txt` file and dump the results to `my_data/` dir. The results are 2 files `out.txt` and `out.json`. 
+Will load the model (that was trained in the **Sentiment fine-tuning** phase ) and predict the sentiment lables for each line of text in the `my_data/data.txt` file and dump the results to `my_data/` dir. The results are 2 files `out.txt` and `out.json`. 
 > `out.txt`: txt file, where each text is attached with predicted sentiment label. 
 >
 > `out.json`: json file, where each text is an instance of its' utf-8 decoded string, the predicted sentiment labels by their order and the prediction probability of those labels.
