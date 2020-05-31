@@ -51,9 +51,9 @@ text_3
 ```
 `my_data/out.txt` format is:
 ```
-text_1: emoji_1_1 emoji_1_2 emoji_1_3 emoji_1_4 emoji_1_5
-text_2: emoji_2_1 emoji_2_2 emoji_2_3 emoji_2_4 emoji_2_5
-text_3: emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
+emoji_1_1 emoji_1_2 emoji_1_3 emoji_1_4 emoji_1_5
+emoji_2_1 emoji_2_2 emoji_2_3 emoji_2_4 emoji_2_5
+emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
 ```
 `my_data/out.json` format is:
 ```json
@@ -113,9 +113,9 @@ text_3
 ```
 `my_data/out.txt` format is:
 ```
-text_1: label_1
-text_2: label_2
-text_3: label_3
+label_1
+label_2
+label_3
 ```
 `my_data/out.json` format is:
 ```json

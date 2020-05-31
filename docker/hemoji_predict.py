@@ -63,10 +63,10 @@ def evaluate(model, tokens, top_k=5):
 
 def dump_results(line, emojis, emojis_probs, top_emojis):
     full_out = ({'input': line,
-                     'emojis': str(emojis),
-                     'probs': str(emojis_probs),})
+                 'emojis': str(emojis),
+                 'probs': str(emojis_probs),})
 
-    short_out = (line, top_emojis)
+    short_out = top_emojis
 
     # full out
     with open(out_path + 'out.json', 'a') as f:
@@ -75,8 +75,8 @@ def dump_results(line, emojis, emojis_probs, top_emojis):
 
     # short out
     with open(out_path + 'out.txt', 'a') as f:
-        emojis = "".join([e for e in short_out[1]])
-        f.writelines("{0}: {1}\n".format(short_out[0], emojis))
+        emojis = " ".join([e for e in short_out])
+        f.writelines("{0}\n".format(emojis))
 
 
 def init_out_files(out_path):

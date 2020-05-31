@@ -66,7 +66,7 @@ def dump_results(line, labels, labels_probs, c_highest):
                  'emojis': str(labels),
                  'probs': str(labels_probs), })
 
-    short_out = (line, c_highest)
+    short_out = c_highest
 
     # full out
     with open(out_path + 'out.json', 'a') as f:
@@ -75,7 +75,7 @@ def dump_results(line, labels, labels_probs, c_highest):
 
     # short out
     with open(out_path + 'out.txt', 'a') as f:
-        f.writelines("{0}: {1}\n".format(short_out[0], short_out[1]))
+        f.writelines("{0}\n".format(short_out))
 
 
 if __name__ == '__main__':
