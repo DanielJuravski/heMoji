@@ -8,15 +8,20 @@ Get the heMoji docker image (using the below cmd you'll get the latest image).
     docker pull danieljuravski/hemoji
 Run a container of that image.
 
-    docker run -it --name hemoji -v $(pwd)/my_data:/my_data danieljuravski/hemoji
+    docker run -it --name hemoji -v $(pwd)/my_data:/my_data -p 5000:5000 -d danieljuravski/hemoji
 >Docker runs processes in isolated containers. A container is a process which runs on a host. The host may be local or remote. When an operator executes docker run, the container process that runs is isolated in that it has its own file system, its own networking, and its own isolated process tree separate from the host.
 
 where:
 - `-it` is for running the container in interactive mode and allocate a tty for it.
-- `--name` is for easy access for your container.
+- `--name hemoji` is for easy access for your container.
 -  `-v $(pwd)/my_data:/my_data` is for mounting your local `my_data` dir into the container.
+- `-p 5000:5000` is for mapping the port 5000 in the container to port 5000 on the Docker host.
+- `-d` is for running the container is detached mode - running in the background.
 
-You will automatically tunnelled to the containers bash prompt - `home` dir (`/root/heMoji`).
+You will might want to explore the container, with
+
+    docker exec -it hemoji /bin/bash
+you will automatically tunnelled to the container's bash prompt - `home` dir (`/root/heMoji`).
 In this dir, you will find:
 - `README.md`: the present readme file
 - `model`: contains the vocab and the trained heMoji models
@@ -26,10 +31,16 @@ In this dir, you will find:
 
 Your volume will be attached to `/my_data/` path.
 
-In any time you can detach out of your container by `CTRL P + Q` and attach it back by `docker exec -it hemoji /bin/bash`.
+In any time you can detach out of your container by `CTRL P + Q` and attach it back with the cmd above.
 
 ## Emoji Predict
-Predicting emojis for given a text:
+You can predict the emojis for your text via 2 options:
+- Inside Container Usage: attach your data into the container and execute it's prepared in advance scripts.
+- Outside Container Usage: the hemoji container holds an Flask microframework which you can access and query with your text data.
+
+### Inside Container Usage
+
+For predicting emojis for given a text inside the container, you should attach into the container via `docker exec -it hemoji /bin/bash` and run :
 
     python hemoji_predict.py --data /my_data/data.txt --out /my_data/
     
@@ -61,6 +72,11 @@ emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
 {"input": "text_2", "emojis": "[emoji_2_1, ..., emoji_2_64]", "probs": "[probability to emoji_2_1, ..., probability to emoji_2_64]"}
 {"input": "text_3", "emojis": "[emoji_3_1, ..., emoji_3_64]", "probs": "[probability to emoji_3_1, ..., probability to emoji_3_64]"}
 ```
+
+### Outside Container Usage
+As mentioned, there is a Flask microframework which runs inside the container. It's configure to run over the localhost and republished to 5000 port of the Docker host (derived from the `docker run` cmd above). 
+
+You can use the hemoji prediction wherever you desire to (you may use the `api_example.py` scratch as a reference for it). 
 
 ## Sentiment Fine-tuning
 Beyond the ability to predict the corresponding emoji for a given input text, the model works well as the basis for other sentiment prediction tasks, using transfer learning.

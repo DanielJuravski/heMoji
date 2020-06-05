@@ -1,7 +1,6 @@
 FROM ubuntu:18.04
 LABEL maintainer="Daniel Juravski"
 
-
 RUN mkdir -p /root/heMoji/
 WORKDIR /root/heMoji/
 
@@ -25,5 +24,5 @@ RUN pip install -e .
 RUN mv README.sh /usr/local/bin/
 RUN echo "/usr/local/bin/README.sh" >> /root/.bashrc
 
-
-ENTRYPOINT /bin/bash
+EXPOSE 5000
+ENTRYPOINT ["python", "app.py"]
