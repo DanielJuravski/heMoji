@@ -55,7 +55,7 @@ def evaluate(model, tokens):
     c_probs = model.predict(tokens)[0]
     labels = np.argsort(c_probs)
     labels = labels[::-1]
-    e_labels_reverse_probs = [c_probs[i] for i in labels]
+    e_labels_reverse_probs = ["%.32f" % c_probs[i] for i in labels]
     c_highest = labels[0]
 
     return labels, c_highest, e_labels_reverse_probs
