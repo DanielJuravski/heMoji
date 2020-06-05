@@ -34,9 +34,9 @@ Your volume will be attached to `/my_data/` path.
 In any time you can detach out of your container by `CTRL P + Q` and attach it back with the cmd above.
 
 ## Emoji Predict
-You can predict the emojis for your text via 2 options:
-- Inside Container Usage: attach your data into the container and execute it's prepared in advance scripts.
-- Outside Container Usage: the hemoji container holds an Flask microframework which you can access and query with your text data.
+You can predict the emojis for your text data via 2 options:
+- Inside Container Usage: attach your data into the container and execute the container's scripts.
+- Outside Container Usage: the hemoji container holds a local REST api which you can access and query with your text data.
 
 ### Inside Container Usage
 
@@ -74,7 +74,7 @@ emoji_3_1 emoji_3_2 emoji_3_3 emoji_3_4 emoji_3_5
 ```
 
 ### Outside Container Usage
-As mentioned, there is a Flask microframework which runs inside the container. It's configure to run over the localhost and republished to 5000 port of the Docker host (derived from the `docker run` cmd above). 
+As mentioned, there is a Flask microframework which runs inside the container. It's configure to run over the localhost and republished to 5000 port of the Docker host (derives from the `docker run` cmd above). 
 
 You can use the hemoji prediction wherever you desire to (you may use the `api_example.py` scratch as a reference for it). 
 

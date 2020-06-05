@@ -37,6 +37,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-
-
-    ## remove harcoded values from hemoji_predcict
