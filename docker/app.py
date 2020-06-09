@@ -12,13 +12,15 @@ class HeMoji(Resource):
         tokens = encode_input_sentence(sentok, input_sentence=text)
         if tokens is not None:
             emojis, emojis_probs = evaluate(model, tokens)
+            result_emojis = {e: emojis[e] for e in range(len(emojis))}
+            result_emojis_probs = {p: str(emojis_probs[p]) for p in range(len(emojis_probs))}
         else:
-            emojis = emojis_probs = 'N/A'
+            result_emojis = result_emojis_probs = 'N/A'
 
         result = dict()
         result['input'] = text
-        result['emojis'] = {e: emojis[e] for e in range(len(emojis))}
-        result['emojis_probs'] = {p: str(emojis_probs[p]) for p in range(len(emojis_probs))}
+        result['emojis'] = result_emojis
+        result['emojis_probs'] = result_emojis_probs
 
         return result
 
