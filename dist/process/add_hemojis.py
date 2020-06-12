@@ -8,11 +8,14 @@ MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm.csv"
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
 
 
-def get_emojis_keys():
+def get_emojis_keys(prefix=""):
     app_url = "http://127.0.0.1:5000/"
     result = requests.get(url=app_url + 'init')
 
     emojis = json.loads(result.text)[u'emojis'].values()
+
+    # add prefix to col name (optional)
+    emojis = [prefix+e for e in emojis]
 
     return emojis
 
