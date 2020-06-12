@@ -6,8 +6,9 @@ from collections import OrderedDict
 from add_hemojis import get_emojis_keys
 
 
-MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_iviw0976.csv"
-MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_iviw0976_sum.csv"
+MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
+DYAD = "tzoa2112"
+MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_" + DYAD + "_sum.csv"
 SBS_FEATURES_FILE_PATH = "/home/daniel/Documents/heMoji_poc/natalie_data/SBS_Features_18032020.csv"
 
 SPEAKER_MAP = {
@@ -26,9 +27,11 @@ def summerize_moments(mbm):
     t_emojis = get_emojis_keys(prefix='t_')
     cols_to_summerize = ['c_positive_v1', 'c_negative_v1', 't_positive_v1', 't_negative_v1'] + c_emojis + t_emojis
 
+    dyad_mbm = mbm.loc[mbm[u't_init']+mbm[u'c_code'] == DYAD]
+
     # create summerized object
     sbs_data = OrderedDict()
-    for index, row in mbm.iterrows():
+    for index, row in dyad_mbm.iterrows():
         if row['transcription_hard_key'] not in sbs_data:
             s_init_data = {k: 0 for k in cols_to_summerize}
             sbs_data[row['transcription_hard_key']] = deepcopy(s_init_data)
@@ -75,7 +78,10 @@ def append_features(sbs_data):
         transcription_hard_key_value = row[u'transcription_hard_key']
         feats = {f: 0 for f in feats_to_append}
         for k in feats_to_append:
-            val = float(features.loc[features[u'transcription_hard_key'] == transcription_hard_key_value][k])
+            try:
+                val = float(features.loc[features[u'transcription_hard_key'] == transcription_hard_key_value][k])
+            except ValueError:
+                val = 'n/a'
             feats[k] = val
         feats_list.append(feats)
 
@@ -91,7 +97,7 @@ def append_features(sbs_data):
 if __name__ == '__main__':
     """
     input: mbm file
-    output: mpm (not anymore...) file where every row is:
+    output: mpm (not anymore...) file of specific DYAD where every row is:
         - a session summerized info (hemoji only) based on the mbm info, features are seperated to client and therapist
         - negative & positive counters
         - poms
