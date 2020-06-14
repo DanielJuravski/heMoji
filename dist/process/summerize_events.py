@@ -2,12 +2,13 @@ import pandas as pd
 from copy import deepcopy
 import math
 from collections import OrderedDict
+import numpy as np
 
 from add_hemojis import get_emojis_keys
 
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
-DYAD = "tzoa2112"
+DYAD = "smgs7369"
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_" + DYAD + "_sum.csv"
 SBS_FEATURES_FILE_PATH = "/home/daniel/Documents/heMoji_poc/natalie_data/SBS_Features_18032020.csv"
 
@@ -15,6 +16,12 @@ SPEAKER_MAP = {
     'Client': 'c_',
     'Therapist': 't_'
 }
+
+
+def add_normalize_seesion_counters_of(sbs_data, k, v, features):
+    sum = np.sum([v[f] for f in features])
+    for f in features:
+        sbs_data[k]['norm_' + f] = (v[f] / float(sum))
 
 
 def summerize_moments(mbm):
@@ -46,6 +53,20 @@ def summerize_moments(mbm):
             v = row[k]
             if not math.isnan(v):
                 sbs_data[row['transcription_hard_key']][SPEAKER_MAP[speaker]+k] += v
+
+    # add normalized values for client and therapist counters
+    for k,v in sbs_data.iteritems():
+        # normalize c_emojis
+        add_normalize_seesion_counters_of(sbs_data, k, v, c_emojis)
+
+        # normalize t_emojis
+        add_normalize_seesion_counters_of(sbs_data, k, v, t_emojis)
+
+        # normalize 'c_positive_v1', 'c_negative_v1'
+        add_normalize_seesion_counters_of(sbs_data, k, v, ['c_positive_v1', 'c_negative_v1'])
+
+        # normalize 't_positive_v1', 't_negative_v1'
+        add_normalize_seesion_counters_of(sbs_data, k, v, ['t_positive_v1', 't_negative_v1'])
 
     # sbs_data from dict to list to df
     sbs_data_list = []
@@ -108,3 +129,4 @@ if __name__ == '__main__':
     sbs_data = append_features(sbs_data)
     sbs_data.to_csv(MBM_TARGET_FILE_PATH, encoding='utf-8', sep=',')
 
+    print("[OK] dumped to {}".format(MBM_TARGET_FILE_PATH))
