@@ -1,16 +1,18 @@
 import pandas as pd
 from copy import deepcopy
 import math
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import numpy as np
+import io
 
 from add_hemojis import get_emojis_keys
 
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
-DYAD = "smgs7369"
+DYAD = "iviw0976"
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_" + DYAD + "_sum.csv"
 SBS_FEATURES_FILE_PATH = "/home/daniel/Documents/heMoji_poc/natalie_data/SBS_Features_18032020.csv"
+EMOJIS_MAP_FILE_PATH = "emojis.map"
 
 SPEAKER_MAP = {
     'Client': 'c_',
@@ -22,6 +24,40 @@ def add_normalize_seesion_counters_of(sbs_data, k, v, features):
     sum = np.sum([v[f] for f in features])
     for f in features:
         sbs_data[k]['norm_' + f] = (v[f] / float(sum))
+
+    return sbs_data
+
+
+def load_emojis_map():
+    f = io.open(EMOJIS_MAP_FILE_PATH, mode="r", encoding="utf-8")
+    lines = f.readlines()
+    emojis_map = dict()
+    for line in lines:
+        if line[0] == '#':
+            continue
+        e, cat = line.strip('\n').split('\t')
+        emojis_map[e] = cat
+
+    return emojis_map
+
+
+def add_pos_neg_emojis_counters(sbs_data, features, prefix):
+    """
+    add columnns of clusternig the emojis counts based on EMOJIS_MAP_FILE_PATH (for example negative vs positive emojis)
+    :param sbs_data:
+    :param features:
+    :param prefix:
+    :return:
+    """
+    emojis_map = load_emojis_map()
+    for k, v in sbs_data.iteritems():
+        for e in features:
+            map_key = prefix + emojis_map[e.strip(prefix)]
+            if map_key not in sbs_data[k]:
+                sbs_data[k][map_key] = 0
+            sbs_data[k][map_key] += v[e]
+
+    return sbs_data
 
 
 def summerize_moments(mbm):
@@ -54,19 +90,28 @@ def summerize_moments(mbm):
             if not math.isnan(v):
                 sbs_data[row['transcription_hard_key']][SPEAKER_MAP[speaker]+k] += v
 
+    # sum emojis counts to pos/neg groups
+    sbs_data = add_pos_neg_emojis_counters(sbs_data, c_emojis, 'c_')
+    sbs_data = add_pos_neg_emojis_counters(sbs_data, t_emojis, 't_')
+
     # add normalized values for client and therapist counters
     for k,v in sbs_data.iteritems():
         # normalize c_emojis
-        add_normalize_seesion_counters_of(sbs_data, k, v, c_emojis)
+        sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, c_emojis)
 
         # normalize t_emojis
-        add_normalize_seesion_counters_of(sbs_data, k, v, t_emojis)
+        sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, t_emojis)
 
         # normalize 'c_positive_v1', 'c_negative_v1'
-        add_normalize_seesion_counters_of(sbs_data, k, v, ['c_positive_v1', 'c_negative_v1'])
+        sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, ['c_positive_v1', 'c_negative_v1'])
 
         # normalize 't_positive_v1', 't_negative_v1'
-        add_normalize_seesion_counters_of(sbs_data, k, v, ['t_positive_v1', 't_negative_v1'])
+        sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, ['t_positive_v1', 't_negative_v1'])
+
+        # sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, ['c_neg_emojis', 'c_pos_emojis'])
+        # sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, ['t_neg_emojis', 't_pos_emojis'])
+        sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, ['c_neg_emojis', 'c_pos_emojis', 'c_anomal_emojis'])
+        sbs_data = add_normalize_seesion_counters_of(sbs_data, k, v, ['t_neg_emojis', 't_pos_emojis', 't_anomal_emojis'])
 
     # sbs_data from dict to list to df
     sbs_data_list = []
