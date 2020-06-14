@@ -70,7 +70,8 @@ def append_features(sbs_data):
                       'c_a_poms_sad',
                       'c_a_poms_contentment',
                       'c_a_poms_anxiety',
-                      'c_a_poms_vigor']
+                      'c_a_poms_vigor',
+                      'c_b_ors']
 
     # iterate over target sbs and append for each 'transcription_hard_key' the features above
     feats_list = []
