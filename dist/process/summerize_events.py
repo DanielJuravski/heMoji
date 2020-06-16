@@ -9,7 +9,7 @@ from add_hemojis import get_emojis_keys
 
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
-DYAD = "iviw0976"
+DYAD = "tkzr4705"
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_" + DYAD + "_sum.csv"
 SBS_FEATURES_FILE_PATH = "/home/daniel/Documents/heMoji_poc/natalie_data/SBS_Features_18032020.csv"
 EMOJIS_MAP_FILE_PATH = "emojis.map"
@@ -132,12 +132,13 @@ def append_features(sbs_data):
     features = pd.read_csv(SBS_FEATURES_FILE_PATH)
     # which src features to append
     feats_to_append = ['c_a_poms_calmness',
-                      'c_a_poms_anger',
-                      'c_a_poms_sad',
-                      'c_a_poms_contentment',
-                      'c_a_poms_anxiety',
-                      'c_a_poms_vigor',
-                      'c_b_ors']
+                       'c_a_poms_anger',
+                       'c_a_poms_sad',
+                       'c_a_poms_contentment',
+                       'c_a_poms_anxiety',
+                       'c_a_poms_vigor',
+                       'c_a_poms19',  # happy
+                       'c_b_ors']
 
     # iterate over target sbs and append for each 'transcription_hard_key' the features above
     feats_list = []
