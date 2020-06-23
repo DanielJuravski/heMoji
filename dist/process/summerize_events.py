@@ -4,12 +4,13 @@ import math
 from collections import OrderedDict, defaultdict
 import numpy as np
 import io
+import scipy.stats
 
 from add_hemojis import get_emojis_keys
 
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
-DYAD = "tkzr4705"
+DYAD = "rrmo9272"
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_" + DYAD + "_sum.csv"
 SBS_FEATURES_FILE_PATH = "/home/daniel/Documents/heMoji_poc/natalie_data/SBS_Features_18032020.csv"
 EMOJIS_MAP_FILE_PATH = "emojis.map"
@@ -162,6 +163,40 @@ def append_features(sbs_data):
     return sbs_data
 
 
+def set_norm_emojis_entropy(sbs_data):
+    """
+    iterate the sessions, for each session - calc the entropy value,
+    the entropy value is based over the norm_emojis (64) probabilities.
+    entropy both for client and therapist is calculated
+    :param sbs_data:
+    :return:
+    """
+    ent_data = []
+    ent_keys = ["c_ent", "t_ent"]
+    c_emojis = get_emojis_keys(prefix='norm_c_')
+    t_emojis = get_emojis_keys(prefix='norm_t_')
+    top_dists = 5
+    for index, row in sbs_data.iterrows():
+        ent = {k: 0 for k in ent_keys}
+        # calc ent for client emojis (the values in the df are strings. you need float them first)
+        c_ent = scipy.stats.entropy([float(v) for v in row[c_emojis].values][:top_dists])
+        ent['c_ent'] = c_ent
+
+        # calc ent for therapist emojis (the values in the df are strings. you need float them first)
+        t_ent = scipy.stats.entropy([float(v) for v in row[t_emojis].values][:top_dists])
+        ent['t_ent'] = t_ent
+
+        ent_data.append(ent)
+
+    # convert to dataframe
+    ent_dataframe = pd.DataFrame(ent_data)
+
+    # append feats_dataframe to the src one
+    sbs_data = pd.concat([sbs_data, ent_dataframe], axis=1)
+
+    return sbs_data
+
+
 if __name__ == '__main__':
     """
     input: mbm file
@@ -172,6 +207,7 @@ if __name__ == '__main__':
     """
     mbm = pd.read_csv(MBM_SRC_FILE_PATH, encoding='utf-8', index_col=0)
     sbs_data = summerize_moments(mbm)
+    # sbs_data = set_norm_emojis_entropy(sbs_data)
     sbs_data = append_features(sbs_data)
     sbs_data.to_csv(MBM_TARGET_FILE_PATH, encoding='utf-8', sep=',')
 
