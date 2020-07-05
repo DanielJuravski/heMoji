@@ -9,9 +9,9 @@ from dist.process.add_hemojis import get_emojis_keys
 from dist.process.summerize_events import load_emojis_map
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
-DYAD = "ogpb0304"
-SESSION_DIV = 20
-SESSION_DISPLAY = [0, -1]
+DYAD = "iviw0976"
+SESSION_DIV = 10
+SESSION_DISPLAY = [10]
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/plots/" + DYAD + ".png"
 
 
@@ -47,6 +47,7 @@ def emojis_to_neg_pos(c_emojis):
 
 def process(data):
     output_all_sessions = {}
+    emojis_keys = get_emojis_keys()
     for session_id in SESSION_DISPLAY:
         session_data = data[session_id]
 
@@ -57,10 +58,14 @@ def process(data):
         output_this_session = {}
         c_emojis_pos_p = []
         c_emojis_neg_p = []
+        t_emojis_pos_p = []
+        t_emojis_neg_p = []
 
         for g_i in range(len(groups)-1):
 
-            c_emojis = {e: 0 for e in get_emojis_keys()}
+            c_emojis = {e: 0 for e in emojis_keys}
+            t_emojis = {e: 0 for e in emojis_keys}
+
             for i in range(groups[g_i], groups[g_i+1]):
                 turns_data = session_data.loc[session_data['dialog_turn_number'] == i]
                 for _, row in turns_data.iterrows():
@@ -71,13 +76,25 @@ def process(data):
                             v = row[e]
                             if not math.isnan(v):
                                 c_emojis[e] += v
+                    elif speaker == 'Therapist':
+                        for e in t_emojis:
+                            v = row[e]
+                            if not math.isnan(v):
+                                t_emojis[e] += v
 
             p_pos, p_neg = emojis_to_neg_pos(c_emojis)
             c_emojis_pos_p.append(p_pos)
             c_emojis_neg_p.append(p_neg)
 
+            p_pos, p_neg = emojis_to_neg_pos(t_emojis)
+            t_emojis_pos_p.append(p_pos)
+            t_emojis_neg_p.append(p_neg)
+
         output_this_session['c_norm_pos'] = c_emojis_pos_p
         output_this_session['c_norm_neg'] = c_emojis_neg_p
+
+        output_this_session['t_norm_pos'] = t_emojis_pos_p
+        output_this_session['t_norm_neg'] = t_emojis_neg_p
 
         output_all_sessions[transcription_hard_key] = output_this_session
 
@@ -89,12 +106,17 @@ def plot_norms(output_all_sessions):
     ax = fig.gca()
 
     for session_key, stats in output_all_sessions.iteritems():
-        pos_curve = stats['c_norm_pos']
-        neg_curve = stats['c_norm_neg']
+        c_pos_curve = stats['c_norm_pos']
+        c_neg_curve = stats['c_norm_neg']
+        t_pos_curve = stats['t_norm_pos']
+        t_neg_curve = stats['t_norm_neg']
         ls = random.sample(['-', '--', '-.', ':'], 1)[0]
 
-        plt.plot(neg_curve, label=session_key+'_neg', linestyle=ls, color='red')
-        plt.plot(pos_curve, label=session_key+'_pos', linestyle=ls, color='green')
+        plt.plot(c_neg_curve, label='c_'+session_key+'_neg', linestyle='-', color='red')
+        plt.plot(c_pos_curve, label='c_'+session_key+'_pos', linestyle='-', color='green')
+
+        plt.plot(t_neg_curve, label='t_'+session_key+'_neg', linestyle=':', color='red')
+        plt.plot(t_pos_curve, label='t_'+session_key+'_pos', linestyle=':', color='green')
 
     ax.set_xticks(np.arange(0, SESSION_DIV))
     fig.set_size_inches(20, 6)
@@ -106,7 +128,7 @@ def plot_norms(output_all_sessions):
 if __name__ == '__main__':
     """
     input: mbm_hemojis file
-    output: plot of the neg and pos probs over the session (divided dynamically) with option to display several sessions
+    output: plot of the neg and pos probs over the session (divided dynamically) both of the client and the therapist with option to display several sessions
     """
     # load mbm-hemoji data
     mbm = pd.read_csv(MBM_SRC_FILE_PATH, encoding='utf-8', index_col=0)
