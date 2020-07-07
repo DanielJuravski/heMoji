@@ -9,9 +9,11 @@ from dist.process.add_hemojis import get_emojis_keys
 from dist.process.summerize_events import load_emojis_map
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
-DYAD = "iviw0976"
-SESSION_DIV = 10
-SESSION_DISPLAY = [10]
+DYAD = "rtuo1247"
+SESSION_DIV = 3
+SESSION_DISPLAY = [0,-1]
+PLT_C = True
+PLT_T = True
 MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/plots/" + DYAD + ".png"
 
 
@@ -39,8 +41,14 @@ def emojis_to_neg_pos(c_emojis):
 
     emojis_labels_sum = sum(emojis_labels_aggrigate.values())
 
-    pos_norm = emojis_labels_aggrigate['pos_emojis'] / emojis_labels_sum
-    neg_norm = emojis_labels_aggrigate['neg_emojis'] / emojis_labels_sum
+    try:
+        pos_norm = emojis_labels_aggrigate['pos_emojis'] / emojis_labels_sum
+    except ZeroDivisionError:
+        pos_norm = 0
+    try:
+        neg_norm = emojis_labels_aggrigate['neg_emojis'] / emojis_labels_sum
+    except ZeroDivisionError:
+        neg_norm = 0
 
     return pos_norm, neg_norm
 
@@ -110,13 +118,17 @@ def plot_norms(output_all_sessions):
         c_neg_curve = stats['c_norm_neg']
         t_pos_curve = stats['t_norm_pos']
         t_neg_curve = stats['t_norm_neg']
-        ls = random.sample(['-', '--', '-.', ':'], 1)[0]
+        lss = list(['-', '--', '-.', ':'])
+        ls_c = random.sample(lss, 1)[0]
+        lss.remove(ls_c)
+        ls_t = random.sample(lss, 1)[0]
 
-        plt.plot(c_neg_curve, label='c_'+session_key+'_neg', linestyle='-', color='red')
-        plt.plot(c_pos_curve, label='c_'+session_key+'_pos', linestyle='-', color='green')
-
-        plt.plot(t_neg_curve, label='t_'+session_key+'_neg', linestyle=':', color='red')
-        plt.plot(t_pos_curve, label='t_'+session_key+'_pos', linestyle=':', color='green')
+        if PLT_T == True:
+            plt.plot(c_neg_curve, label='c_'+session_key+'_neg', linestyle=ls_c, color='red')
+            plt.plot(c_pos_curve, label='c_'+session_key+'_pos', linestyle=ls_c, color='green')
+        if PLT_T == True:
+            plt.plot(t_neg_curve, label='t_'+session_key+'_neg', linestyle=ls_t, color='red')
+            plt.plot(t_pos_curve, label='t_'+session_key+'_pos', linestyle=ls_t, color='green')
 
     ax.set_xticks(np.arange(0, SESSION_DIV))
     fig.set_size_inches(20, 6)
