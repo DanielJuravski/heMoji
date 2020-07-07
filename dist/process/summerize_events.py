@@ -5,6 +5,7 @@ from collections import OrderedDict, defaultdict
 import numpy as np
 import io
 import scipy.stats
+import datetime
 
 from add_hemojis import get_emojis_keys
 
@@ -197,6 +198,20 @@ def set_norm_emojis_entropy(sbs_data):
     return sbs_data
 
 
+def add_date(sbs_data):
+    dates_list = []
+    for index, row in sbs_data.iterrows():
+        transcription_hard_key_value = row[u'transcription_hard_key']
+        date_val = transcription_hard_key_value.split('_')[1]
+        date = {'date': date_val}
+        dates_list.append(date)
+
+    dates_dataframe = pd.DataFrame(dates_list)
+    sbs_data = pd.concat([sbs_data, dates_dataframe], axis=1)
+
+    return sbs_data
+
+
 if __name__ == '__main__':
     """
     input: mbm file
@@ -204,11 +219,13 @@ if __name__ == '__main__':
         - a session summerized info (hemoji only) based on the mbm info, features are seperated to client and therapist
         - negative & positive counters
         - poms
+        - append clear date value of the session
     """
     mbm = pd.read_csv(MBM_SRC_FILE_PATH, encoding='utf-8', index_col=0)
     sbs_data = summerize_moments(mbm)
     # sbs_data = set_norm_emojis_entropy(sbs_data)
     sbs_data = append_features(sbs_data)
+    sbs_data = add_date(sbs_data)
     sbs_data.to_csv(MBM_TARGET_FILE_PATH, encoding='utf-8', sep=',')
 
     print("[OK] dumped to {}".format(MBM_TARGET_FILE_PATH))
