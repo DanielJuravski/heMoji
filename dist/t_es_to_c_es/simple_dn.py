@@ -2,10 +2,14 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.model_selection import train_test_split
+from keras import backend as K
+import tensorflow as tf
+import keras.backend.tensorflow_backend as tfb
 
 from dist.process.add_hemojis import get_emojis_keys
 
 DATA_FILE_PATH = '/home/daniel/heMoji/dist/t_es_to_c_es/data.txt'
+POS_WEIGHT = 10  # multiplier for positive targets, needs to be tuned
 
 
 def load_data():
@@ -23,6 +27,7 @@ def load_data():
 
     emojis_keys = get_emojis_keys()
     emojis_to_labels = {e: i for i, e in enumerate(emojis_keys)}
+    labels_to_emojis = {i: e for i, e in enumerate(emojis_keys)}
 
     Xs = []
     Ys = []
@@ -42,15 +47,7 @@ def load_data():
 
     X_train, X_test, Y_train, Y_test = train_test_split(Xs, Ys, test_size=0.2, random_state=1)
 
-    return X_train, X_test, Y_train, Y_test, emojis_to_labels
-
-
-
-
-import tensorflow as tf
-import keras.backend.tensorflow_backend as tfb
-
-POS_WEIGHT = 10  # multiplier for positive targets, needs to be tuned
+    return X_train, X_test, Y_train, Y_test, emojis_to_labels, labels_to_emojis
 
 
 def weighted_binary_crossentropy(target, output):
@@ -74,31 +71,13 @@ def weighted_binary_crossentropy(target, output):
                                                     pos_weight=POS_WEIGHT)
     return tf.reduce_mean(loss, axis=-1)
 
+
 def init_model():
     # define the keras model
     model = Sequential()
     model.add(Dense(4096, input_dim=64, activation='relu'))
     model.add(Dense(2048, activation='relu'))
     model.add(Dense(64, activation='sigmoid'))
-
-    from keras import backend as K
-    def recall_m(y_true, y_pred):
-        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-        recall = true_positives / (possible_positives + K.epsilon())
-        return recall
-    def precision_m(y_true, y_pred):
-        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-        precision = true_positives / (predicted_positives + K.epsilon())
-        return precision
-    def f1_m(y_true, y_pred):
-        precision = precision_m(y_true, y_pred)
-        recall = recall_m(y_true, y_pred)
-        return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
-
-
-
 
     # compile the keras model
     model.compile(loss=weighted_binary_crossentropy, optimizer='adam', metrics=['accuracy', 'top_k_categorical_accuracy', f1_m])
@@ -120,6 +99,21 @@ def train_model(model, X_train, X_test, Y_train, Y_test):
 
     model.save('model.hdf5')
 
+
+def recall_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+def precision_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + K.epsilon())
+    return precision
+def f1_m(y_true, y_pred):
+    precision = precision_m(y_true, y_pred)
+    recall = recall_m(y_true, y_pred)
+    return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
 
 
 if __name__ == '__main__':
