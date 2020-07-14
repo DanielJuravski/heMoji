@@ -3,7 +3,7 @@ from random import shuffle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-
+CLASSES_SAMPLES_NUM_EVEN = False
 SRC_MBM_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm.csv"
 TARGET_TRAIN_FILE_PATH = "/home/daniel/heMoji/dist/patient_therapist_finetuning/data/train.tsv"
 TARGET_DEV_FILE_PATH = "/home/daniel/heMoji/dist/patient_therapist_finetuning/data/dev.tsv"
@@ -48,15 +48,16 @@ def create_dataset_files(client_turns, therapist_turns):
     shuffle(client_turns)
     shuffle(therapist_turns)
 
-    # equalize numbers of samples of both classes
-    min_len = np.min((len(client_turns), len(therapist_turns)))
-    client_turns = client_turns[:min_len]
-    therapist_turns = therapist_turns[:min_len]
-    print("Total number of samples: {0} (Clients) + {0} (Therapists) = {1} samples".format(min_len, 2*min_len))
+    if CLASSES_SAMPLES_NUM_EVEN:
+        # equalize numbers of samples of both classes
+        min_len = np.min((len(client_turns), len(therapist_turns)))
+        client_turns = client_turns[:min_len]
+        therapist_turns = therapist_turns[:min_len]
+        print("Total number of samples: {0} (Clients) + {0} (Therapists) = {1} samples".format(min_len, 2*min_len))
 
     # make X, y
     X = client_turns + therapist_turns
-    y = np.concatenate((np.zeros(min_len, dtype=int), np.ones(min_len, dtype=int)))
+    y = np.concatenate((np.zeros(len(client_turns), dtype=int), np.ones(len(therapist_turns), dtype=int)))
 
     # split train:0.7 | dev:0.1 | test:0.2
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
