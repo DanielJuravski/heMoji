@@ -5,7 +5,9 @@ from tqdm import trange
 
 
 MBM_SRC_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm.csv"
-MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis.csv"
+MBM_TARGET_FILE_PATH = "/home/daniel/heMoji/dist/data/mbm_hemojis_with_probs.csv"
+
+EVAL_TEXT_LEN_80 = True  # False - do not evaluate text that larger 80 tokens
 
 
 def get_emojis_keys(prefix=""):
@@ -20,8 +22,16 @@ def get_emojis_keys(prefix=""):
     return emojis
 
 
+def is_text_len_to_eval(text):
+    if EVAL_TEXT_LEN_80 == True:
+        return True
+    else:
+        return len(text.split()) < 80
+
+
 def add_hemojis(mbm):
     # mbm = mbm.iloc[184850:188391+1]  # iviw0976
+    mbm = mbm.iloc[184850:184850+200]
 
     emojis = get_emojis_keys()
     app_url = "http://127.0.0.1:5000/"
@@ -35,7 +45,7 @@ def add_hemojis(mbm):
         except AttributeError:
             text = None
 
-        if (text is not None) and (len(text.split()) < 80):  # text smaller than 80 words --> predict
+        if (text is not None) and (is_text_len_to_eval(text)):  # text smaller than 80 words --> predict
             print(text)
             result = requests.get(url=app_url + text)
             try:
