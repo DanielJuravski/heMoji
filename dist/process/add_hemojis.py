@@ -31,7 +31,7 @@ def is_text_len_to_eval(text):
 
 def add_hemojis(mbm):
     # mbm = mbm.iloc[184850:188391+1]  # iviw0976
-    mbm = mbm.iloc[184850:184850+3]
+    # mbm = mbm.iloc[184850:184850+3]
 
     emojis = get_emojis_keys()
     app_url = "http://127.0.0.1:5000/"
