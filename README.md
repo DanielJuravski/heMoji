@@ -24,6 +24,7 @@ To get more technical, the model is a (by now fairly standard) neural natural la
 
 When fine-tuning, we replace the emoji softmax classification layer by a new sentiment softmax classifier. We then train the new layer while freezing the rest of the network, and then gradually unfreeze the network, fine-tuning the each layer (from first to last) individually. We then fine tune the entire network end-to-end.
 While we have our own scientific plans for using the model, we imagine many potential uses for it. To make it easy for others to use the model, we release it as a dockerised 🐋 image which includes an easy-to-use pretrained Keras model and and pre-processing code (coming soon).
+
 ---
 [1] Felbo, B., Mislove, A., Sogaard, A., Rahwan, I., & Lehmann, S. (2017). Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and sarcasm. arXiv preprint arXiv:1708.00524.
 
