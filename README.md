@@ -3,7 +3,7 @@
 ## Sentiment and emotion predictions using emojis for Hebrew text
 
 
-The heMoji system predicts Emojis for Hebrew text.
+The heMoji system predicts Emojis for Hebrew text (checkout the <a href=https://nlp.biu.ac.il/~danielj/heMoji/>web demo</a>!).
 
 It is about time to get some emoji predictions over Hebrew text! The heMoji system predicts emojis for Hebrew texts, and can be used as a basis for more targetted sentiment/emotion/sarcasm detection systems.
 
