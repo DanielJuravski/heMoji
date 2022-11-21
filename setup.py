@@ -13,7 +13,7 @@ setup(
         'matplotlib==2.2.5',
         'numpy==1.13.1',
         'scikit-learn==0.19.0',
-        'tensorflow==1.4.1',
+        'tensorflow==2.9.3',
         'text-unidecode==1.0',
         'tqdm==4.46.0',
         'flask==1.1.2',
