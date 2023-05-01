@@ -16,7 +16,7 @@ setup(
         'tensorflow==1.4.1',
         'text-unidecode==1.0',
         'tqdm==4.46.0',
-        'flask==1.1.2',
+        'flask==2.3.2',
         'flask-restful==0.3.8',
         'requests==2.23.0'
     ],
