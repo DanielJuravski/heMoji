@@ -18,6 +18,6 @@ setup(
         'tqdm==4.46.0',
         'flask==1.1.2',
         'flask-restful==0.3.8',
-        'requests==2.23.0'
+        'requests==2.31.0'
     ],
 )
